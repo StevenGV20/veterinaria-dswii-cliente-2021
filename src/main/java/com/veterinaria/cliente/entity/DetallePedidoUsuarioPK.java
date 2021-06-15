@@ -1,8 +1,6 @@
 package com.veterinaria.cliente.entity;
 import java.io.Serializable;
 
-import javax.persistence.Column;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +15,9 @@ public class DetallePedidoUsuarioPK implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@Column(name = "idpedido", unique = true, nullable = false, length = 10,insertable = true,updatable = false)
+	//@Column(name = "idpedido", unique = true, nullable = false, length = 10,insertable = true,updatable = false)
 	private int idpedido;
-	@Column(name = "idusuario",unique = true, nullable = false, length = 10, insertable = true, updatable = false)
+	//@Column(name = "idusuario",unique = true, nullable = false, length = 10, insertable = true, updatable = false)
 	private int idusuario;
 
 	

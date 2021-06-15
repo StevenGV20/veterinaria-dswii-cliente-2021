@@ -2,15 +2,13 @@ package com.veterinaria.cliente.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Embeddable;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
 
-@Embeddable
+//@Embeddable
 public class AccesoPK implements Serializable{
 
 	

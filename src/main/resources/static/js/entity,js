@@ -1,0 +1,62 @@
+alert('hola');
+function leerCliente(){
+    	var cod=$("#idCodigo").val();
+	    var nom=$("#idNombre").val();
+	    var ape=$("#idApellido").val();
+	    var dir=$("#idDireccion").val();
+	    var fon=$("#idTelefono").val();
+	    var dni=$("#idDni").val();
+	    var cor=$("#idCorreo").val();
+	    var sex=$("#idSexo").val();
+	    var psw=$("#idPassword").val();
+	    var dis=$("#idDistrito").val();
+	    
+	    var obj = {
+	    		idusuario : cod,
+	    		nombre : nom,
+	    		apellido : ape,
+	    		direccion : dir,
+	    		telefono : fon,
+	    		dni : dni,
+	    		correo : cor,
+	    		sexo : sex,
+	    		password : psw,
+	    		iddistrito : {
+	    			iddistrito : dis
+	    		}
+	    }
+	    return obj;
+    }
+    
+    function leerUsuario(){
+    	var cod=$("#idCodigo").val();
+	    var nom=$("#idNombre").val();
+	    var ape=$("#idApellido").val();
+	    var dir=$("#idDireccion").val();
+	    var fon=$("#idTelefono").val();
+	    var dni=$("#idDni").val();
+	    var cor=$("#idCorreo").val();
+	    var sex=$("#idSexo").val();
+	    var rol=$("#idRol").val();
+	    var psw=$("#idPassword").val();
+	    var dis=$("#idDistrito").val();
+	    
+	    var obj = {
+	    		idusuario : cod,
+	    		nombre : nom,
+	    		apellido : ape,
+	    		direccion : dir,
+	    		telefono : fon,
+	    		dni : dni,
+	    		correo : cor,
+	    		sexo : sex,
+	    		password : psw,
+	    		iddistrito : {
+	    			iddistrito : dis
+	    		},
+	    		idrol: {
+	    			idrol : rol
+	    		}
+	    }
+	    return obj;
+    }

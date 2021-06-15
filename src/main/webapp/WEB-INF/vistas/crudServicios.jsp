@@ -47,6 +47,15 @@
    <link href="css/dataTables.bootstrap.min.css" rel="stylesheet"> 
    <link href="css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/bootstrapValidator.css"/>
+    
+    
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-storage.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-analytics.js"></script>
     <!-- CSS only 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.2/css/bootstrapValidator.min.css"/>-->
 
@@ -187,7 +196,7 @@
                     <div class="section-heading">
                       <h2>Registrar Servicio</h2>
                     </div>
-                    <form  method="post" action="mantenerServicio" id="idRegistrar" data-toggle="validator" enctype="multipart/form-data" class="mt-3 form-horizontal">
+                    <form  method="post" action="servicio/registrarServicio" id="idRegistrar" data-toggle="validator" class="mt-3 form-horizontal">
                       <div class="row">
                         <div class="col-md-6">
                           <fieldset class="form-group">
@@ -229,8 +238,10 @@
                         
                        <div class="col-md-6">
                           <fieldset>
-                         	<label>Subir Imagen:</label>                           	
-							<input type="file" class="input"  name="file" id="idFoto" placeholder="Ingresar Foto">
+                         	<label>Subir Imagen:</label>  
+                         	<input name="foto" id="fotos1" value="img/image-not-found.png" hidden=""/>
+                         	<img id="foto1" src="img/image-not-found.png" class="card-img-top img-card"/>                           	
+							<input type="file" class="input" onchange="uploadImage(0)" name="files" id="idFoto" placeholder="Ingresar Foto">
                           </fieldset>
                         </div>
                         
@@ -265,8 +276,8 @@
         
         <!-- Modal footer -->
         <div class="modal-footer">
-          <form action="eliminaServicio" method="post" name="formDelete" id="id_form_elimina">	
-		  	  <input type="hidden" id="idEliminar" name="id">
+          <form action="servicio/eliminaServicio" method="post" name="formDelete" id="id_form_elimina">	
+		  	  <input type="hidden" id="idEliminar" name="codigo">
 	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 	          <button type="button" id="btn_eliminar" data-dismiss="modal" class="btn btn-primary">Eliminar</button>
             </form>
@@ -348,10 +359,31 @@
 	<!-- Page level plugins -->
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
-	
+	<script src="js/sweetalert2.min.js"></script>
    
     <script type="text/javascript">
+/*
+    function mensajeGood(mensaje){
+    	Swal.fire({
+            type: 'success',
+            title: 'Excelente',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+    }
 
+    function mensajeError(mensaje){
+    	Swal.fire({
+            type: 'info',
+            title: 'Opps...',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+    }
+*/
+    
 $(document).on("click","#btnDetalles",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Detalles del Producto");
@@ -364,7 +396,7 @@ $(document).on("click","#btnDetalles",(function(){
 $(document).on("click","#btnEditar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Editar Servicio");
-	$.getJSON("buscaServicioXID",{id:cod},function(data){
+	$.getJSON("http://localhost:8090/servicio/buscaServicioById/"+cod,{},function(data){
 		$("#idCodServicio").val(data.idservicio);
 		$("#idNombre").val(data.nombre);
 		$("#idPrecio").val(data.precio);
@@ -373,7 +405,6 @@ $(document).on("click","#btnEditar",(function(){
 		$("#idCategoria").val(data.idcategoria.idcategoria);
 		//$("#idFecha").val(data.fecha);
 	})
-	bloquear(false);
 }));
 
 
@@ -395,8 +426,10 @@ function bloquear(b){
 }
 
 function listarTabla(){
+	 $('#tbServicios').DataTable().clear();
+	 $('#tbServicios').DataTable().destroy();
 	$('#tbServicios tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("listaServicios",{},function(lista, q, t){
+	$.getJSON("http://localhost:8090/servicio/lista",{},function(lista, q, t){
 		console.log(lista);
 		$("#tbServicios tbody").empty();
 		//var detalles="<button type='button' class='btn btn-info' id='btnDetalles' data-toggle='modal'  data-target='#idModalFoto'>Subir Foto</button>";
@@ -404,7 +437,7 @@ function listarTabla(){
 		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
 		$.each(lista,function(index,item){
 			$("#tbServicios tbody").append("<tr><td>"+item.idservicio+"</td><td>"+item.nombre+"</td><td style='width:40%;'>"+item.descripcion+"</td><td>"+item.horario+"</td><td>"+
-					parseFloat(item.precio).toFixed(2)+"</td><td>"+item.idcategoria.nombre+"</td><td><img src='img/"+item.foto+"'  alt='No existe' style='width: 200px;'/></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+					parseFloat(item.precio).toFixed(2)+"</td><td>"+item.idcategoria.nombre+"</td><td><img src='"+item.foto+"'  alt='No existe' style='width: 200px;'/></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
 		})
 		//$("#tbServicios img").css("width","100%");
 	    $("#tbServicios").DataTable();
@@ -414,15 +447,13 @@ function listarTabla(){
 
 
 $(document).ready( function () {
-
-    
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
 	listarTabla();
     //alert("Hola");
     
-     $.getJSON("listaCategorias",{},function(data, q,t){
+     $.getJSON("http://localhost:8090/combo/categoria",{},function(data, q,t){
         console.log(data);
 		//$("#idCategoria").append("<option></option>");
 		$.each(data,function(index,item){
@@ -444,12 +475,12 @@ $(document).ready( function () {
     	 $("#eliminar").modal("hide");
      	$.ajax({
              type: "POST",
-             url: "eliminaServicio", 
+             url: "servicio/eliminaServicio", 
              data: $('#id_form_elimina').serialize(),
              success: function(data){
             	 
 	           	 listarTabla();
-	           	 mostrarMensaje(data.mensaje);
+	           	 mostrarMensaje("Se elimino correctamente.");
              },
              error: function(){
            	  mostrarMensaje(MSG_ERROR);

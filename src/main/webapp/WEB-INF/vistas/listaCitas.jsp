@@ -104,6 +104,8 @@
                                         <tr>
                                         	<th>ID</th>
                                             <th>Fecha de Registro</th>
+                                            <th>Fecha de Atencion</th>
+                                            <th>Hora de Atencion</th>
                                             <th>Estado</th>
                                             <th>Servicio</th>
                                             <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
@@ -115,7 +117,9 @@
                                     <tfoot>
                                         <tr>
                                         	<th>ID</th>
-                                            <th>Nombre del cliente</th>
+                                            <th>Fecha de Registro</th>
+                                            <th>Fecha de Atencion</th>
+                                            <th>Hora de Atencion</th>
                                             <th>Estado</th>
                                             <th>Servicio</th>
                                             <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
@@ -128,7 +132,9 @@
                                     	<c:forEach items="${requestScope.citas}" var="item">
                                     		<tr>
 	                                        	<td>${item.idcita}</td>
-	                                            <td>${item.fechaRegistro}</td>
+	                                            <td>${item.strFechaNacFormateada}</td>
+	                                            <td>${item.strFechaAteFormateada}</td>
+	                                            <td>${item.strHoraAteFormateada}</td>
 	                                            <td>${item.estado}</td>
 	                                            <td>${item.servicio.nombre}</td>
 	                                            <c:if test="${sessionScope.objUsuario.idrol.idrol==2 || sessionScope.objUsuario.idrol.idrol==3}">
@@ -320,54 +326,17 @@ $(document).on("click","#verPedido",(function(){
 	
 	//bloquear(false);
 }));
-/*
-function formatDate(timestamp) {
-    console.log(timestamp);
-    //console.log(timestamp.split("/")[1].replace(/\D/g, ''));
-    var x = new Date(timestamp.split("-")[1].replace(/\D/g, ''));
-    var dd = x.getDate();
-    var mm = x.getMonth() + 1;
-    var yy = x.getFullYear();
-    return dd + "/" + mm + "/" + yy;
-}*/
-
-function getFormattedDate(date) {
-	  var year = date.getFullYear();
-
-	  var month = (1 + date.getMonth()).toString();
-	  month = month.length > 1 ? month : '0' + month;
-
-	  var day = date.getDate().toString();
-	  day = day.length > 1 ? day : '0' + day;
-	  
-	  return month + '/' + day + '/' + year;
-	}
-
-function formatAMPM(date) {
-	  var hours = date.getHours();
-	  var minutes = date.getMinutes();
-	  var ampm = hours >= 12 ? 'PM' : 'Am';
-	  hours = hours % 12;
-	  hours = hours ? hours : 12; // the hour '0' should be '12'
-	  minutes = minutes < 10 ? '0'+minutes : minutes;
-	  var strTime = hours + ':' + minutes + ' ' + ampm;
-	  return strTime;
-	}
-
 
 $(document).on("click","#btnAsignar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	//alert(cod);
-	$.getJSON("buscaCitaById",{cod:cod},function(data, q, t){
+	$.getJSON("http://localhost:8090/cita/buscaCitaById/"+cod,{},function(data, q, t){
 		console.log(data);
 		var date = new Date(data.fechaAtencion);
 		var time=new Date(data.horaAtencion);
-	    //alert(((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear());
-		$("#idCodigoCita").val(data.idcita);//alert(data.fechaAtencion);
-		//alert(date);
-		//alert(getFormattedDate(date));
-		$("#idFecAtencion").val(getFormattedDate(date));
-		$("#idHoraAtencion").val(formatAMPM(time));
+		$("#idCodigoCita").val(data.idcita);
+		$("#idFecAtencion").val(data.fechaAtencion);
+		$("#idHoraAtencion").val(data.horaAtencion);
 		$("#idServicio").val(data.servicio.idservicio);
 		$("#idNomServicio").val(data.servicio.nombre);
 		$("#idCliente").val(data.cliente.idusuario);
@@ -409,7 +378,7 @@ function listarTablas(lista){
 
 function listaVeterinario(){
 	//alert("hola");
-	$.getJSON("listaUsuarioByRol",{cod:5},function(listar, q, t){
+	$.getJSON("http://localhost:8090/usuario/listaUsuarioByRol",{cod:5},function(listar, q, t){
 		console.log(listar);
 		$.each(listar,function(index,item){
 			$("#idVeterinario").append("<option value='"+item.idusuario+"'>"+item.nombre+" "+item.apellido+"</option>");

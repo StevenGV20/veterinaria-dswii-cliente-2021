@@ -89,7 +89,7 @@ function procesarCompra() {
 			var JsonLocalStorageObj = JSON.stringify(compra.obtenerProductosLocalStorage());
 			
 			$.ajax({
-				url:"procesarCarrito",
+				url:"pedido/procesarCarrito",
 				type:"POST",
 				data:{carrito:JsonLocalStorageObj}, 
 				success: function(result){

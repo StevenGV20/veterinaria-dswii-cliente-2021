@@ -406,7 +406,7 @@ function listarTablas(lista){
 
 function listaRepartidor(){
 	//alert("hola");
-	$.getJSON("listaUsuarioByRol",{cod:4},function(listar, q, t){
+	$.getJSON("http://localhost:8090/usuario/listaUsuarioByRol",{cod:4},function(listar, q, t){
 		console.log(listar);
 		$.each(listar,function(index,item){
 			$("#idRepartidor").append("<option value='"+item.idusuario+"'>"+item.nombre+" "+item.apellido+"</option>");

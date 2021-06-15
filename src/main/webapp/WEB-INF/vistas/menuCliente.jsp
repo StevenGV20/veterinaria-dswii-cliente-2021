@@ -142,7 +142,7 @@
 											    </c:if>
 		                                   		
 		                                    	<a href="verLogin" class="nav-link dropdown-item">Mi Perfil</a>
-		                                   		<a href="logout" class="nav-link dropdown-item">Cerrar Session</a>
+		                                   		<a href="usuario/logout" class="nav-link dropdown-item">Cerrar Session</a>
 		                                    </c:if>
 		                               	</div>
                             		</div>
@@ -173,17 +173,18 @@
                             <button><i class="fa fa-search"></i></button>
                         </div>
                     </div>
-                    <div class="col-md-3"><!-- 
+                    <div class="col-md-3">
                         <div class="user">
-                            <a href="verListaProductos" class="btn wishlist">
-                                <i class="fa fa-heart"></i>
-                                <span>(0)</span>
+                            <a href="verChatCliente" target="blank" class="btn wishlist">
+                               <i class="fas fa-users"></i>
+                                <span>Unete al Foro</span>
                             </a>
-                            <a href="verCarrito" class="btn cart">
+                            <!-- 
+                            <a href="verChatPersonal" class="btn cart">
                                 <i class="fa fa-shopping-cart"></i>
-                                <span>(0)</span>
-                            </a>
-                        </div> -->
+                                <span>Entra al chat personal</span>
+                            </a> -->
+                        </div>
                     </div>
                 </div>
             </div>

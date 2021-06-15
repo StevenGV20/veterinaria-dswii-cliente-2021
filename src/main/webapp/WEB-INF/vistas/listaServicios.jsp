@@ -255,7 +255,7 @@
 	    					+ "		</div> "
 	    					+ "		<div class='product-image'> "
 	    					+ "			<a href='verDetalleServicio?id="+item.idservicio+"'> "
-	    					+ "				<img src='img/"+item.foto+"' class='img_card' alt='Product Image'> "
+	    					+ "				<img src='"+item.foto+"' class='img_card' alt='Product Image'> "
 	    					+ "			</a> "
 	    					+ "			<div class='product-action'> "
 	    					+ "				<a href='verDetalleServicio?id="+item.idservicio+"'><i class='fa fa-search'></i></a> "
@@ -276,9 +276,9 @@
 	    
 	    function listaServiciosByName(nom){
     		$('#listaServicios').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
-	    	$.getJSON("listaServiciosByName",{nombre:nom},function(lista, q, t){
+	    	$.getJSON("http://localhost:8090/servicio/listaServiciosByName/"+nom,{},function(lista, q, t){
 	    		$("#listaServicios").empty();
-	    		console.log(lista);
+	    		console.log(lista); 
 	    		if(nom.trim().length>0)
 	    			$("#idTotalProductos").html("<h6>Resultados de búsqueda para '"+nom+"'</h6>");
 	    		else
@@ -299,7 +299,7 @@
 	    					+ "		</div> "
 	    					+ "		<div class='product-image'> "
 	    					+ "			<a href='verDetalleServicio?id="+item.idservicio+"'> "
-	    					+ "				<img src='img/"+item.foto+"' class='img_card' alt='Product Image'> "
+	    					+ "				<img src='"+item.foto+"' class='img_card' alt='Product Image'> "
 	    					+ "			</a> "
 	    					+ "			<div class='product-action'> "
 	    					+ "				<a href='verDetalleServicio?id="+item.idservicio+"'><i class='fa fa-search'></i></a> "
@@ -317,24 +317,30 @@
 	        })
 	    	
 	    }
+	    
+	   
 		
 	    $(document).ready(function(){
-	    	listarServicios("listaServicios");
+	    	listarServicios("http://localhost:8090/servicio/lista");
 	    	
 	    	$("#filtroBuscar").keyup(function(){
-	    		listaServiciosByName($(this).val().trim());
+	    		var nom=$(this).val().trim();
+	    		if(nom!='')
+	    			listaServiciosByName(nom);
+	    		else
+	    			listarServicios("http://localhost:8090/servicio/lista");
 	    	});
 	    	
 	    	
 	    	$("#idFiltro").change(function(){
 	    		if($(this).val()==1)
-	    			listarServicios("listaServiciosByNameAZ");	    			
+	    			listarServicios("http://localhost:8090/servicio/listaServiciosByNameAZ");	    			
 	    		else if($(this).val()==2)
-	    			listarServicios("listaServiciosByNameZA");
+	    			listarServicios("http://localhost:8090/servicio/listaServiciosByNameZA");
 	    		else if($(this).val()==3)
-	    			listarServicios("listaServiciosByPrecioMenor");	    			
+	    			listarServicios("http://localhost:8090/servicio/listaServiciosByPrecioMenor"); 			
 	    		else if($(this).val()==4)
-	    			listarServicios("listaServiciosByPrecioMayor");
+	    			listarServicios("http://localhost:8090/servicio/listaServiciosByPrecioMayor");
 	    		/*else
 	    			listarProductos("listaProductos");*/
 	    	});	

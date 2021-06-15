@@ -44,12 +44,20 @@
 	<script src="js/sample.js"></script>
 	<link rel="stylesheet" href="css/neo.css">
 	
-   <link href="css/dataTables.bootstrap.min.css" rel="stylesheet"> 
+	<!-- 
+   <link href="css/dataTables.bootstrap.min.css" rel="stylesheet">  -->
+    <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
    <link href="css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/bootstrapValidator.css"/>
     
 	
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-storage.js"></script>
 
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-analytics.js"></script>
 	
 
     <!-- CSS only <link rel="stylesheet" href="css/samples.css"> -->
@@ -86,9 +94,15 @@
   	}
   	
   	.card-img-top{
+  		width:40%;
+  	}
+  	.img-list{
   		width:100%;
   	}
-  	
+  	.modal-lg{
+  		max-width: 60%;
+  	}
+	
   </style>
 </head>
 
@@ -204,7 +218,8 @@
                     <div class="section-heading">
                       <h2>Registrar Poducto</h2>
                     </div>
-                    <form  method="post" action="registrarProducto" id="idRegistrar"  enctype="multipart/form-data"  data-toggle="validator" class="mt-3 form-horizontal">
+                    <!-- producto/registrarProducto -->
+                    <form  method="post" accept-charset="UTF-8" action="http://localhost:8090/producto/registra" id="idRegistrar"  data-toggle="validator" class="mt-3 form-horizontal">
                       <div class="row">
                         <div class="col-md-6">
                           <fieldset>
@@ -212,12 +227,12 @@
 							<input type="text" class="input"  name="nombre" id="idNombre" placeholder="Ingresar Nombre">
                           </fieldset>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                           <fieldset>                           	
 							<input type="text" class="input"  name="precio" id="idPrecio" placeholder="Ingresar Precio">
                           </fieldset>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                           <fieldset>
 							<input type="text" class="input"  name="stock" id="idStock" placeholder="Ingresar Stock">
                           </fieldset>
@@ -227,11 +242,20 @@
 							<input type="text" class="input"  name="marca" id="idMarca" placeholder="Ingresar Marca">
                           </fieldset>
                         </div>
+                        
+                        <div class="col-md-6">
+                          <fieldset class="block">
+							<select id="idCategoria"  class="input" name="idcategoria.idcategoria">	
+								<option>[ Seleccione Categoria ]</option>
+							</select>
+						 </fieldset>
+                        </div>
                         <div class="col-md-12">
                           <fieldset>                           	
 							<textarea class="input"  name="descripcionSimple" id="idDescripcionSimple" placeholder="Ingresar descripcion simple"></textarea>
                           </fieldset>
                         </div>
+                        
                          <div class="col-md-12">
                          	 <fieldset>    
 		                          <div class="adjoined-bottom">
@@ -247,35 +271,39 @@
                         </div>
                         <input type="hidden" class="input"  name="descripcionHTML" id="idDescripcionHTML">
                       
-                        <div class="col-md-6">
-                          <fieldset class="block">
-                          <label>Elija una Categoria</label>
-							<select id="idCategoria"  class="input" name="idcategoria.idcategoria">	
-								<option>[ Seleccione ]</option>
-							</select>
-						 </fieldset>
-                        </div>
                         
-                       <div class="col-md-6">
+                       <div class="col-md-4">
                           <fieldset>
-                         	<label>Suba la 1° Imagen:</label>                           	
-							<input type="file" class="input"  name="files" id="idImagen1" placeholder="Ingresar Foto1">
+                         	<label>Suba la 1° Imagen:</label>  
+                         	<img id="foto1" src="img/image-not-found.png" class="card-img-top img-card"/>                         	
+							<input type="file" class="input" onchange="uploadImage(0);"  name="files" id="idImagen1" placeholder="Ingresar Foto1">
+							<input name="foto1" id="fotos1" value="img/image-not-found.png" hidden=""/>
+							<input name="foto2" id="fotos2" value="img/image-not-found.png" hidden=""/>
+							<input name="foto2" id="fotos3" value="img/image-not-found.png" hidden=""/>
                           </fieldset>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                           <fieldset>          
-                          	<label>Suba la 2° Imagen:</label>                 	
-							<input type="file" class="input"  name="files" id="idImagen2" placeholder="Ingresar Foto2">
+                          	<label>Suba la 2° Imagen:</label>   
+                          	<img id="foto2" src="img/image-not-found.png" class="card-img-top img-card"/>              	
+							<input type="file" class="input" onchange="uploadImage(1);"  name="files" id="idImagen2" placeholder="Ingresar Foto2">
+                          </fieldset>
+                        </div>
+                        <div class="col-md-4">
+                          <fieldset>     
+                          	<label>Suba la 3° Imagen:</label>
+                          	<img id="foto3" src="img/image-not-found.png" class="card-img-top img-card"/>                          	
+							<input type="file" class="input" onchange="uploadImage(2);"  name="files" id="idImagen3" placeholder="Ingresar Foto3">
                           </fieldset>
                         </div>
                         <div class="col-md-6">
                           <fieldset>     
-                          	<label>Suba la 3° Imagen:</label>                          	
-							<input type="file" class="input"  name="files" id="idImagen3" placeholder="Ingresar Foto3">
+                          	<label> Imagen:</label>                          	
+							
                           </fieldset>
                         </div>
                         <div class="col-md-12 mt-2">
-                          <button type="submit" class="btn__submit" id="btnRegistrar">Registrar</button>  		
+                          <button type="button" class="btn__submit" id="btnRegistrar">Registrar</button>  		
         				  <button type="button" class="btn__reset" id="btnCancelar" data-dismiss="modal">Cancelar</button>
                         </div>
                         
@@ -304,7 +332,7 @@
         <!-- Modal footer -->
         <div class="modal-footer">
           <form action="" method="post" name="formDelete" id="id_form_elimina">	
-		  	  <input type="hidden" id="idEliminar" name="id">
+		  	  <input type="hidden" id="idEliminar" name="codigo">
 	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 	          <button type="button" id="btn_eliminar" data-dismiss="modal" class="btn btn-primary">Eliminar</button>
             </form>
@@ -369,34 +397,33 @@
 	<!-- Page level plugins -->
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
-	
-	
-	<script>
-		
-		$(document).ready(function() {
-			//$("#txtEditor").Editor();
-			initSample();
-		});
-	</script>
-	
-    <script type="text/javascript">
-/*
-$(document).on("click","#btnDetalles",(function(){
-	var cod=$(this).parents('tr').find("td")[0].innerHTML;
-	$("#titleModal").text("Detalles del Producto");
-	$("#idCodigo").val(cod);
-	$.getJSON("",{codigo:cod},function(data){
-		
-	})
-	bloquear(false);
-}));*/
+   <script src="js/sweetalert2.min.js"></script>
+   
+   <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+
+  <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+
+  <!-- Add Firebase products that you want to use
+  <script src="https://www.gstatic.com/firebasejs/8.6.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.2/firebase-firestore.js"></script> -->
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-analytics.js"></script>-->
+
+<script type="text/javascript">
+
 
 $(document).on("click","#btnEditar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Editar Area");
-	$.getJSON("buscaProductoXID",{id:cod},function(data){
-		console.log(data);
-		$("#idCodProducto").val(data.idproducto);
+	//$("#idRegistrar").attr("action","producto/actualizaProducto")
+	$.getJSON("http://localhost:8090/producto/buscaProductoXID/"+cod,{},function(data){
+		console.log(data.producto);
+		$("#idCodProducto").val(cod);
+		//alert($("#idCodProducto").val());
 		$("#idNombre").val(data.nombre);
 		$("#idPrecio").val(data.precio);
 		$("#idStock").val(data.stock);
@@ -410,7 +437,7 @@ $(document).on("click","#btnEditar",(function(){
 		$("#idImagen1").val(data.foto1);
 		
 	})
-	bloquear(false);
+	//bloquear(false);
 	
 }));
 
@@ -426,63 +453,75 @@ function bloquear(b){
 	$("#btnRegistrar").prop("disabled",b);
 }
 
-function accionEliminar(){	
-	//$('#idEliminar').val(id);
-    $.ajax({
-          type: "POST",
-          url: "eliminaCrudAlumno", 
-          data: $('#id_form_elimina').serialize(),
-          success: function(data){
-        	  agregarGrilla(data.lista);
-        	  mostrarMensaje(data.mensaje);
-          },
-          error: function(){
-        	  mostrarMensaje(MSG_ERROR);
-          }
-     });
-}
-
 function limpiar(){
 
-	bloquear(false);
+	CKEDITOR.instances.editor.destroy();
+	initSample();
+	//bloquear(false);
 	$("#idRegistrar").trigger("reset");
 	$("#idRegistrar").data("bootstrapValidator").resetForm(true);
 	$("#idCodProducto").val("0");
-	CKEDITOR.instances.editor.destroy();
-	initSample();
+	$("#idRegistrar select").val("[ Seleccione Categoria ]");
+	$("#idDescripcionHTML").val("");
+	$("#foto1").attr("src","img/image-not-found.png");
+	$("#foto2").attr("src","img/image-not-found.png");
+	$("#foto3").attr("src","img/image-not-found.png");
+	$("#fotos1").attr("src","img/image-not-found.png");
+	$("#fotos2").attr("src","img/image-not-found.png");
+	$("#fotos3").attr("src","img/image-not-found.png");
+	
 }
 
 function listarTabla(){
+	$('#idTableProductos').DataTable().clear();
+	 $('#idTableProductos').DataTable().destroy();
 	$('#idTableProductos tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("listaProductos",{},function(lista, q, t){
+	$.getJSON("http://localhost:8090/producto/lista",{},function(lista, q, t){
 		console.log(lista);
-		$("#idTableProductos tbody").empty();
 		//var detalles="<button type='button' class='btn btn-info' id='btnDetalles' data-toggle='modal'  data-target='#idModalFoto'>Subir Foto</button>";
 		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
 		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
+		$("#idTableProductos tbody").empty();
+		var c=0;
 		$.each(lista,function(index,item){
 			var img="image-not-found.png";
-			$("#idTableProductos tbody").append("<tr><td>"+item.idproducto+"</td><td>"+item.nombre+"</td><td style='width:30%;'>"+item.descripcionSimple+"</td><td>"+item.stock+"</td><td>"+
-					item.precio+"</td><td>"+item.idcategoria.nombre+"</td><td>"+item.marca+"</td><td><img src='img/"+item.foto1+
-					"' class='card-img-top' alt='No existe'/></td><td><a href='verDetalleProducto?id="+item.idproducto+"' target='_blank'><i class='fas fa-eye'></i></a></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
-		})
-		  $("#idTableProductos").DataTable();
+			$("#idTableProductos tbody").append("<tr><td>"+item.idproducto+"</td><td>"+
+					item.nombre+"</td><td style='width:30%;'>"+
+					item.descripcionSimple+"</td><td>"+
+					item.stock+"</td><td>"+
+					item.precio+"</td><td>"+
+					item.idcategoria.nombre+"</td><td>"+
+					item.marca+"</td><td><img  src='img/cargando.gif' onload='$(this).attr(\"src\",\""+item.foto1+"\")' class='img-list' alt='No existe' />"+
+					"</td><td><a href='verDetalleProducto?id="+
+							item.idproducto+"' target='_blank'><i class='fas fa-eye'></i></a></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+			
+			//$(".img-list").eq(c).attr("src",item.foto1);
+			c++;
+		})//class='card-img-top'
+		$("#idTableProductos").DataTable();
+		/*$('.img-list').on('load', function() {
+			  alert("image is loaded");
+		});*/
     })
 	
 }
 
 $(document).ready( function () {
+
+    
+	
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
+	initSample();
 	localStorage.clear();
     //alert("Hola");
-    
+  
    //$("#id_table").DataTable();
     
 	listarTabla();
     
-    $.getJSON("listaCategorias",{},function(data, q,t){
+    $.getJSON("http://localhost:8090/combo/categoria",{},function(data, q,t){
         console.log(data);
 		//$("#idCategoria").append("<option></option>");
 		$.each(data,function(index,item){
@@ -495,6 +534,7 @@ $(document).ready( function () {
     $("#btnCancelar").click(function(){
 		//alert("hola"); 
     	limpiar();
+    	//$("#idRegistrar").attr("action","producto/registrarProducto")
     });
 
 
@@ -502,23 +542,83 @@ $(document).ready( function () {
     	var txt= CKEDITOR.instances.editor.getData();
     	$("#idDescripcionHTML").val(txt);
 		//alert("¿Está seguro de enviar?");
-		$("#idRegistrar").action("registrarProductos");
-		$("#idRegistrar").submit();
+		var validator = $('#idRegistrar').data('bootstrapValidator');
+	    validator.validate();
+	    
+	    if (validator.isValid()) {
+	    	const file=document.getElementsByName("files")[0].files[0];
+	    	var sizeByte = file.size;
+	        var sizekiloBytes = parseInt(sizeByte / 1024);
+	    	if(sizekiloBytes>100){
+	    		alert("El tamaño de archivo es "+sizekiloBytes+" KB y supero el limite");
+	    		return;
+	    	}
+	    	
+			$.ajax({
+	    		  type: "POST",
+		          url: "http://localhost:8090/producto/registra", 
+	    		  data: $("#idRegistrar").serialize(),
+		          success: function(data){
+		        	/*
+		        	//var urls = new Array();
+		        	for(var i=0;i<3;i++){
+						uploadImage(i);
+			    	}*/
+		        	
+		        	//console.log(urls);
+		        	listarTabla();
+		        	mostrarMensaje("Se registro crorectamente el producto "+data.idproducto);
+		        	//guardarFotos(data.idproducto);
+		        	limpiar();
+		        	//limpiarFormCliente();
+		          },
+		          error: function(message){
+		        	  console.log(message);
+		        	  mostrarMensaje(message.responseJSON.detail);
+		          }
+		     });
+	    }
+		
+		//$("#idRegistrar").submit();
     });
     
+    function guardarFotos(id){
+    	var urls=new Array();
+    	for(var i=0;i<3;i++){
+    		urls[i]=$("#foto"+(i+1)).val();
+    	}
+		
+    	var obj={foto1 : urls[0], foto2 : urls[1], foto3 : urls[2], idproducto : id};
+    	console.log(obj);
+    	$.ajax({
+  		  type: "PUT",
+	          url: "http://localhost:8090/producto/subirFotos", 
+  		  	  data: obj,
+	          success: function(data){
+	        	mostrarMensaje("Se registro crorectamente las fotos");
+	        	//limpiarFormCliente();
+	          },
+	          error: function(message){
+	        	  console.log(message);
+	        	  mostrarMensaje(message.responseJSON.detail);
+	          }
+	     });
+    }
+    
     $("#btn_eliminar").click(function(){
-
+		var cod=$("#idEliminar").val();
      	  $("#eliminar").modal("hide");
     	$.ajax({
-            type: "POST",
-            url: "eliminaProducto", 
-            data: $('#id_form_elimina').serialize(),
+            type: "DELETE",
+            url: "http://localhost:8090/producto/elimina/"+cod, 
+            //data: $('#id_form_elimina').serialize(),
             success: function(data){
-          	  listarTabla();
-          	  mostrarMensaje(data.mensaje);
+            	$("#idTableProductos tbody").empty();
+          	  	listarTabla();
+          	  mostrarMensaje("Se elimino correctamente");	          	
             },
-            error: function(){
-          	  mostrarMensaje(MSG_ERROR);
+            error: function(message){
+            	mostrarMensaje(message.responseJSON.detail);
             }
        });
     });

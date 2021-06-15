@@ -204,8 +204,8 @@
                           	<label>Sexo</label>
 							<select id="idSexo"  class="input" name="sexo">	
 								<option>[ Seleccione ]</option>
-								<option value="1">MASCULINO</option>
-								<option value="2">FEMENINO</option>
+								<option value="MASCULINO">MASCULINO</option>
+								<option value="FEMENINO">FEMENINO</option>
 							</select>
 						 </fieldset>
                         </div>
@@ -304,8 +304,8 @@
     <script src="assets/js/transition.js"></script>
     <script src="assets/js/owl-carousel.js"></script>
     <script src="assets/js/custom.js"></script>
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+	<!-- JavaScript Bundle with Popper -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -321,29 +321,31 @@
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
-    <!-- Page level custom scripts -->
+    <!-- Page level custom scripts
+    <script src="js/entity.js"></script> -->
     <script src="js/demo/datatables-demo.js"></script>
-    	<script src="js/global.js"></script>
+    <script src="js/global.js"></script>
     <script src="popup.js"></script>
-   <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
+   	<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
+   
     <script type="text/javascript">
 
-
-$(document).on("click","#btnEditar",(function(){
-	var cod=$(this).parents('tr').find("td")[0].innerHTML;
-	$.getJSON("buscaUsuarioXID",{id:cod},function(data){
-		$("#idCodigo").val(data.idusuario);
-		$("#idNombre").val(data.nombre);
-		$("#idApellido").val(data.apellido);
-		$("#idDireccion").val(data.direccion);
-		$("#idTelefono").val(data.telefono);
-		$("#idDni").val(data.dni);
-		$("#idCorreo").val(data.correo);
-		$("#idPassword").val(data.password);
-		$("#idDistrito").val(data.iddistrito.iddistrito);
-	})
-	bloquear(false);
-}));
+	$(document).on("click","#btnEditar",(function(){
+		var cod=$(this).parents('tr').find("td")[0].innerHTML;
+		$.getJSON("http://localhost:8090/usuario/buscaUsuarioXID",{id:cod},function(data){
+			$("#idCodigo").val(data.idusuario);
+			$("#idNombre").val(data.nombre);
+			$("#idApellido").val(data.apellido);
+			$("#idDireccion").val(data.direccion);
+			$("#idTelefono").val(data.telefono);
+			$("#idDni").val(data.dni);
+			$("#idCorreo").val(data.correo);
+			$("#idSexo").val(data.sexo);
+			$("#idPassword").val(data.password);
+			$("#idDistrito").val(data.iddistrito.iddistrito);
+		})
+		//bloquear(false);
+	}));
 
 $(document).on("click","#btnEliminar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
@@ -362,14 +364,17 @@ function limpiarFormCliente(){
 	$("#idRegistrar").trigger("reset");
 	$("#idRegistrar").data("bootstrapValidator").resetForm(true);
 	$("#idDistrito").val("[ Seleccione ]");
+	$("#idSexo").val("[ Seleccione ]");
 	$("#idCodigo").val("0");
 }
 
 //LISTAR CLIENTES/USUARIOS
 function listarTablas(){
+	$('#tbClientes').DataTable().clear();
+	 $('#tbClientes').DataTable().destroy();
 	$('#tbClientes tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("listaClientes",{},function(listar, q, t){
-		console.log(listar);
+	$.getJSON("http://localhost:8090/cliente/lista",{},function(listar, q, t){
+		//console.log(listar);
 		
 		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
 		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
@@ -395,8 +400,8 @@ $(document).ready( function () {
     //alert("Hola");
     listarTablas();
     
-    $.getJSON("listaDistritos",{},function(data, q,t){
-        console.log(data);
+    $.getJSON("http://localhost:8090/combo/distrito",{},function(data, q,t){
+        //console.log(data);
 		$.each(data,function(index,item){
 			$("#idDistrito").append("<option value='"+item.iddistrito+"'>"+item.nombre+"</option>");
 		})
@@ -414,46 +419,109 @@ $(document).ready( function () {
     $("#btnRegistrar").click(function(){
     	var validator = $('#idRegistrar').data('bootstrapValidator');
 	    validator.validate();
+	    
+	    
 	    if (validator.isValid()) {
-	    	if($("#idTelefono").val()<1){
+	    	if($("#idTelefono").val()<1){ 
+	    		alert(JSON.stringify(leerCliente())) ;
 	    		alert("EL Telefono no puede ser con todos lo digitos de valor 0");
 	    		return;
 	    	}else if($("#idDni").val()<1){
 	    		alert("EL DNI no puede ser con todos lo digitos de valor 0");
 	    		return;
+	    	}else{
+	    		if($("#idCodigo").val()>0){
+		    		actualiza();
+		    	}else{
+		    		registrar();
+		    	}
 	    	}
-	    	$.ajax({
-		          type: "POST",
-		          url: "registrarCliente", 
-		          data: $('#idRegistrar').serialize(),
-		          success: function(data){
-		        	listarTablas();
-		        	mostrarMensaje(data.mensaje);
-		        	limpiarFormCliente();
-		          },
-		          error: function(){
-		        	  mostrarMensaje(MSG_ERROR);
-		          }
-		     });
+	    	
 		}
 		    
 	  });
+    function registrar(){
+    	$.ajax({
+    		  type: "POST",
+	          data: JSON.stringify(leerCliente()),
+	          url: "http://localhost:8090/cliente/registra", 
+	          contentType: "application/json",
+	          success: function(data){
+	        	listarTablas();
+	        	mostrarMensaje("Se registro crorectamente el usuario "+data.idusuario);
+	        	limpiarFormCliente();
+	          },
+	          error: function(message){
+	        	  console.log(message);
+	        	  mostrarMensaje(message.responseJSON.detail);
+	          }
+	     });
+    }
+    
+    function actualiza(){
+    	$.ajax({
+	          type: "PUT",
+	          data: JSON.stringify(leerCliente()),
+	          url: "http://localhost:8090/cliente/actualiza", 
+	          contentType: "application/json",
+	          success: function(data){
+	        	listarTablas();
+	        	mostrarMensaje("Se actualizó crorectamente el usuario "+data.idusuario);
+	        	limpiarFormCliente();
+	          },
+	          error: function(message){
+	        	  console.log(message);
+	        	  mostrarMensaje(message.responseJSON.detail);
+	          }
+	     });
+    }
+    
+    
+    function convertirJSON(data){
+    	 //var data = $("form").serialize().split("&");
+    	    console.log(data);
+    	    var obj={};
+    	    for(var key in data)
+    	    {
+    	        console.log(data[key]);
+    	        //obj+='"'+data[key].split('=')[0]+'" :';
+    	        obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	    }
+    	    console.log(obj);
+		return JSON.stringify(obj);
+    }
+    
+    function convertJSON(data){
+    	const serializeToJSON = str => 
+    	  str.split('&')
+    	    .map(x => x.split('='))
+    	    .reduce((acc, [key, value]) => ({
+    	      ...acc,
+    	      [key]: isNaN(value) ? value : Number(value)
+    	    }), {})
+    	    
+    	 return serializeToJSON(data);
+    }
+    
+
     
     $("#btn_eliminar").click(function(){
    	 $("#eliminar").modal("hide");
     	$.ajax({
-            type: "POST",
-            url: "eliminaUsuario", 
+            type: "DELETE",
+            url: "http://localhost:8090/usuario/eliminaUsuario/", 
             data: $('#id_form_elimina').serialize(),
             success: function(data){           	 
 	           	 listarTablas();
-	           	 mostrarMensaje(data.mensaje);
+	           	 mostrarMensaje("Se elimino correctamente");
             },
             error: function(){
           	  mostrarMensaje(MSG_ERROR);
             }
        });
     });
+    
+    
     
 } );
 </script>
@@ -548,7 +616,8 @@ $(document).ready( function () {
                         notEmpty: {    
                             message: ''    
                         },      
-                        integer: {    
+                        regexp: {    
+                            regexp: /^[A-Z]+$/,    
                             message: 'Elija un Sexo'    
                         },     
                     }    

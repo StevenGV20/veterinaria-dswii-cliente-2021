@@ -40,15 +40,15 @@
         <!-- Login Start -->
         <div class="login">
             <div class="container-fluid">
-            <c:if test="${requestScope.MENSAJE!=null}">
+            <c:if test="${sessionScope.MENSAJE!=null}">
 			<div class="alert alert-warning alert-dismissible fade show" role="alert" id="success-alert">
-			  <strong></strong> ${requestScope.MENSAJE}
+			  <strong></strong> ${sessionScope.MENSAJE}
 			  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 			    <span aria-hidden="true">&times;</span>
 			  </button>
 			</div>
 			</c:if>
-			<c:remove var="CORRECTO"/>
+			<c:remove var="MENSAJE"/>
                 <div class="row">
                     <div class="col-md-3 mx-auto" style="width: 200px;">
                         <form class="login-form" action="usuario/login" method="post">

@@ -113,16 +113,17 @@
                         <!-- Pagination Start -->
                         <div class="col-md-12">
                             <nav aria-label="Page navigation example">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                                    </li>
-                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="#">Next</a>
-                                    </li>
+                                <ul class="pagination justify-content-center" id="paginacion">
+                                    <!--   <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Antes</a>
+                                    </li> 
+                                    <li class="page-item"><label class="page-link">1</label></li>
+                                    <li class="page-item"><label class="page-link">2</label></li>
+                                    <li class="page-item"><label class="page-link">3</label></li>                                    -->
+                                    
+                                     <!--  <li class="page-item">
+                                        <a class="page-link" href="#">Siguiente</a>
+                                    </li> -->
                                 </ul>
                             </nav>
                         </div>
@@ -271,12 +272,15 @@
            
     <script type="text/javascript">
     
-	    function listarProductos(url){
+    
+    var condicion=0;
+    
+	    function listarProductos(url,page){
     		$('#listaProductos').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
-	    	$.getJSON(url,{},function(lista, q, t){
+	    	$.getJSON(url+page,{},function(lista, q, t){
 	    		$("#listaProductos").empty();
-	    		console.log(lista.productos);
-	    		$.each(lista.productos,function(index,item){
+	    		$("#paginacion").empty();
+	    		$.each(lista.content,function(index,item){
 	    			$("#listaProductos").append("<div class='col-md-4 col-lg-4 col-sm-4'> "
 	    					+ "	<div class='product-item'> "
 	    					+ "		<div class='product-title'> "
@@ -291,7 +295,55 @@
 	    					+ "		</div> "
 	    					+ "		<div class='product-image'> "
 	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'> "
-	    					+ "				<img src='img/"+item.foto1+"' class='img_card' alt='Product Image'> "
+	    					+ "				<img  src='img/cargando.gif' onload='$(this).attr(\"src\",\""+item.foto1+"\")' class='img_card' alt='Product Image'> "
+	    					+ "			</a> "
+	    					+ "			<div class='product-action'> "
+	    					+ "				<a href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-search'></i></a> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-price'> "
+	    					+ "			<h3><span>S/. </span>"+(item.precio).toFixed(2)+"</h3> "
+	    					+ "			<a class='btn' href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-shopping-cart'></i>Comprar</a> "
+	    					+ "		</div> "
+	    					+ "	</div> "
+	    					+ "</div>");
+	    		})
+	    		console.log("Total pages "+lista.totalPages);
+    			for(var i=1;i<=lista.totalPages;i++){
+    				$("#paginacion").append(" <li class='page-item'><button class='page-link' id='idNumPage'>"+i+"</button></li>");
+    			}
+	    		
+	    		$('#idLoading').hide();
+	    		//$("#tbServicios img").css("width","100%");
+	        })
+	    	
+	    }
+	    
+	    function listarProductosByName(url,nom){
+    		$('#listaProductos').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
+	    	$.getJSON(url+"/"+nom,{},function(lista, q, t){
+	    		$("#listaProductos").empty();
+	    		console.log(lista);
+	    		if(nom.trim().length>0)
+	    			$("#idTotalProductos").html("<h6>Resultados de búsqueda para '"+nom+"'</h6>");
+	    		else
+	    			$("#idTotalProductos").empty();
+	    		$.each(lista,function(index,item){
+	    			$("#listaProductos").append("<div class='col-md-4'> "
+	    					+ "	<div class='product-item'> "
+	    					+ "		<div class='product-title'> "
+	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'>"+item.nombre+"</a> "
+	    					+ "			<div class='ratting'> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-image'> "
+	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'> "
+	    					+ "				<img src='img/cargando.gif' onload='$(this).attr(\"src\",\""+item.foto1+"\")' class='img_card' alt='Product Image'> "
 	    					+ "			</a> "
 	    					+ "			<div class='product-action'> "
 	    					+ "				<a href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-search'></i></a> "
@@ -310,66 +362,52 @@
 	    	
 	    }
 	    
-	    function listarProductosByName(url,nom){
-    		$('#listaProductos').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
-	    	$.getJSON(url,{nombre:nom},function(lista, q, t){
-	    		$("#listaProductos").empty();
-	    		console.log(lista);
-	    		if(nom.trim().length>0)
-	    			$("#idTotalProductos").html("<h6>Resultados de búsqueda para '"+nom+"'</h6>");
-	    		else
-	    			$("#idTotalProductos").empty();
-	    		$.each(lista.productos,function(index,item){
-	    			$("#listaProductos").append("<div class='col-md-4'> "
-	    					+ "	<div class='product-item'> "
-	    					+ "		<div class='product-title'> "
-	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'>"+item.nombre+"</a> "
-	    					+ "			<div class='ratting'> "
-	    					+ "				<i class='fa fa-star'></i> "
-	    					+ "				<i class='fa fa-star'></i> "
-	    					+ "				<i class='fa fa-star'></i> "
-	    					+ "				<i class='fa fa-star'></i> "
-	    					+ "				<i class='fa fa-star'></i> "
-	    					+ "			</div> "
-	    					+ "		</div> "
-	    					+ "		<div class='product-image'> "
-	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'> "
-	    					+ "				<img src='img/"+item.foto1+"' class='img_card' alt='Product Image'> "
-	    					+ "			</a> "
-	    					+ "			<div class='product-action'> "
-	    					+ "				<a href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-search'></i></a> "
-	    					+ "			</div> "
-	    					+ "		</div> "
-	    					+ "		<div class='product-price'> "
-	    					+ "			<h3><span>S/. </span>"+(item.precio).toFixed(2)+"</h3> "
-	    					+ "			<a class='btn' href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-shopping-cart'></i>Comprar</a> "
-	    					+ "		</div> "
-	    					+ "	</div> "
-	    					+ "</div>");
-	    		})
-	    		$('#idLoading').hide();
-	    		//$("#tbServicios img").css("width","100%");
-	        })
-	    	
-	    }
+	    $(document).on("click","#idNumPage",(function(){
+	    	var page=parseInt($(this).text())-1;
+	    	if(condicion==0)
+	    		listarProductos("http://localhost:8090/producto/listaByPage/",page);
+	    	else if(condicion==1)
+	    		listarProductos("http://localhost:8090/producto/listaProductosByNombreAaZ/",page);	  
+	    	else if(condicion==2)
+	    		listarProductos("http://localhost:8090/producto/listaProductosByNombreZaA/",page);	
+	    	else if(condicion==3)
+	    		listarProductos("http://localhost:8090/producto/listaProductoByPrecioMenorMayor/",page);	
+	    	else if(condicion==4)
+	    		listarProductos("http://localhost:8090/producto/listaProductoByPrecioMayoraMenor/",page);
+	    }));
+
+	    
 	    //listarProductos();
 	    $(document).ready(function(){
-	    	listarProductos("/producto/listaProductos");
-	    	
+	    	listarProductos("http://localhost:8090/producto/listaByPage/",0);
+
 	    	$("#filtroBuscar").keyup(function(){
-	    		listarProductosByName("listaProductosByNombre",$(this).val());
+	    		var nom=$(this).val().trim();
+	    		if(nom!='')
+	    			listarProductosByName("http://localhost:8090/producto/listaProductosByNombre",nom);
+	    		else
+	    			listarProductos("http://localhost:8090/producto/listaByPage/",0);
 	    	});
 	    	
 	    	
 	    	$("#idFiltro").change(function(){
-	    		if($(this).val()==1)
-    				listarProductos("listaProductosByNombreAaZ");	    			
-	    		else if($(this).val()==2)
-	    			listarProductos("listaProductosByNombreZaA");
-	    		else if($(this).val()==3)
-    				listarProductos("listaProductoByPrecioMenorMayor");	    			
-	    		else if($(this).val()==4)
-	    			listarProductos("listaProductoByPrecioMayoraMenor");
+	    		if($(this).val()==1){
+	    			condicion=1;
+	    			listarProductos("http://localhost:8090/producto/listaProductosByNombreAaZ/",0);	   
+	    		}
+	    		else if($(this).val()==2){
+	    			condicion=2;
+	    			listarProductos("http://localhost:8090/producto/listaProductosByNombreZaA/",0);	    			
+	    		}
+	    		else if($(this).val()==3){
+	    			condicion=3;
+    				listarProductos("http://localhost:8090/producto/listaProductoByPrecioMenorMayor/",0);	    		    			
+	    		}		
+	    		else if($(this).val()==4){
+	    			condicion=4;
+	    			listarProductos("http://localhost:8090/producto/listaProductoByPrecioMayoraMenor/",0);
+	    		}
+	    			
 	    		/*else
 	    			listarProductos("listaProductos");*/
 	    	});	

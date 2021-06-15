@@ -197,7 +197,7 @@
 	});
     
    
-    $.getJSON("listaDistritos",{},function(data, q,t){
+    $.getJSON("http://localhost:8090/combo/distrito",{},function(data, q,t){
         console.log(data);
 		$.each(data,function(index,item){
 			$("#idDistrito").append("<option value='"+item.iddistrito+"'>"+item.nombre+"</option>");
@@ -223,20 +223,18 @@
 	    		return;
 	    	}
 	    	$.ajax({
-		          type: "POST",
-		          url: "registrarCliente", 
-		          data: $('#idRegistrarCliente').serialize(),
+	    		  type: "POST",
+		          data: JSON.stringify(leerCliente()),
+		          url: "http://localhost:8090/cliente/registra", 
+		          contentType: "application/json",
 		          success: function(data){
-		        	 mostrarMensaje(data.mensaje);
-		        	 if(data.state==0){}
-		        	 else{
-		        		 $(location).attr('href',"/verLogin");
-			        	 limpiarFormCliente();
-		        	 }
-		        	 
+		        	 mostrarMensaje("Se registro crorectamente el cliente "+data.idusuario);
+	        		 $(location).attr('href',"/verLogin");
+		        	 limpiarFormCliente();
 		          },
-		          error: function(){
-		        	  mostrarMensaje(MSG_ERROR);
+		          error: function(message){
+		        	  console.log(message);
+		        	  mostrarMensaje(message.responseJSON.detail);
 		          }
 		     });
 		}		    

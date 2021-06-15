@@ -99,7 +99,7 @@
                         </div>
                                
                         <div class="cont_mant ml-2">
-							<button type="button" class="btn btn-info mt-4" id="btnNuevo" data-toggle="modal" data-target="#nuevo">Nuevo <i class="fa fa-plus-circle" aria-hidden="true"></i></button>  
+							<button type="button" class="btn btn-info mt-4" id="btnNuevo" onclick="$('#nuevo').modal('show');">Nuevo <i class="fa fa-plus-circle" aria-hidden="true"></i></button>  
 						</div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -139,10 +139,10 @@
 									            <td class="">${item.nombre}</td>
 									            <td class="">${item.raza}</td>
 									            <td class="">${item.sexo}</td>
-									            <td class="">${item.fechaNacimiento}</td>
+									            <td class="">${item.strFechaNacFormateada}</td>
 									            <td class="">${item.idespecie.nombre}</td>
 									            <td class="">${item.cliente.nombre}</td>
-									            <td class=""><a href="#" id="btnEditar"  class="btn btn-success" data-toggle="modal" data-target="#nuevo">Editar</a></td>
+									            <td class=""><a href="#" id="btnEditar"  class="btn btn-success">Editar</a></td>
 									            <td class=""><a href="#" id="btnEliminar"  class="btn btn-danger" data-toggle="modal" data-target="#eliminar">Eliminar</a></td>
 									        </tr>
                                     	</c:forEach>
@@ -157,8 +157,8 @@
 
             </div>
             <!-- End of Main Content -->
-
-<div class="modal fade bd-example-modal-lg" id="nuevo"  data-backdrop="static" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<!-- data-backdrop="static" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" -->
+<div class="modal fade bd-example-modal-lg" id="nuevo"  >
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
  		 <section class="forms ml-4 mr-4 m-4">
@@ -343,7 +343,7 @@ $("#tbClientes").on("click","tbody tr",(function(){
 $(document).on("click","#btnEditar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Editar Mascota");
-	$.getJSON("buscarMascotaById",{cod:cod},function(data){
+	$.getJSON("http://localhost:8090/mascota/buscarMascotaById/"+cod,{},function(data){
 		$("#idCodigo").val(data.idmascota);
 		$("#idCodCliente").val(data.cliente.idusuario);
 		$("#idNombre").val(data.nombre);
@@ -353,6 +353,7 @@ $(document).on("click","#btnEditar",(function(){
 		$("#idSexo").val(data.sexo);
 		$("#idEspecie").val(data.idespecie.idespecie);
 	})
+	 $("#nuevo").modal("show");
 	//bloquear(false);
 }));
 
@@ -371,10 +372,10 @@ function bloquear(b){
 function listarMascotas(){
 	$('#dataTable tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
 	var cod=$("#idCodCliente").val();
-	$.getJSON("listaMascotasByCliente",{cod:cod},function(listar, q, t){
+	$.getJSON("http://localhost:8090/mascota/listaMascotasByCliente/"+cod,{},function(listar, q, t){
 		console.log(listar);
 		
-		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
+		var editar="<button type='button' class='btn btn-success' id='btnEditar'>Editar</button>";
 		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
 
 		$("#dataTable tbody").empty();
@@ -404,7 +405,7 @@ $(document).ready( function () {
 		$("#success-alert").slideUp(500);	
 	});
 	
-	 $.getJSON("listaEspecies",{},function(data, q,t){
+	 $.getJSON("http://localhost:8090//combo/especie",{},function(data, q,t){
 	        console.log(data);
 			$.each(data,function(index,item){
 				$("#idEspecie").append("<option value='"+item.idespecie+"'>"+item.nombre+"</option>");
@@ -417,38 +418,72 @@ $(document).ready( function () {
 		//alert("hola");
 		//bloquear(false);
     	limpiarFormMascota();
+    	 $("#nuevo").modal("hide");
     });
     
 	 $("#btnRegistrar").click(function(){
 	    	var validator = $('#idRegistrar').data('bootstrapValidator');
 		    validator.validate();
 		    if (validator.isValid()) {
-			  	$.ajax({
-			          type: "POST",
-			          url: "registrarMascota", 
-			          data: $('#idRegistrar').serialize(),
-			          success: function(data){
-			        	  mostrarMensaje(data.mensaje);
-			        	  limpiarFormMascota();
-			        	  listarMascotas();
-			          },
-			          error: function(){
-			        	  mostrarMensaje(MSG_ERROR);
-			          }
-			     });
+				if($("#idCodigo").val()>0){
+					actualiza();
+				}else{
+					registrar();
+				}
+				 $("#nuevo").modal("hide");
 		    }
 		  });
 	 
+	 function registrar(){
+	    	$.ajax({
+		          type: "POST",
+		          data: JSON.stringify(leerMascota()),
+		          url: "http://localhost:8090/mascota/registra", 
+		          contentType: "application/json",
+		          success: function(data){
+		        	mostrarMensaje("Se registro crorectamente a la mascota "+data.idmascota);
+		        	 limpiarFormMascota();
+		        	  listarMascotas();
+		        	  //$("#nuevo").modal("hide");
+		          },
+		          error: function(message){
+		        	  console.log(message);
+		        	  mostrarMensaje(message.responseJSON.detail);
+		          }
+		     });
+	    }
+	    
+	    function actualiza(){
+	    	$.ajax({
+		          type: "PUT",
+		          data: JSON.stringify(leerMascota()),
+		          url: "http://localhost:8090/mascota/actualiza", 
+		          contentType: "application/json",
+		          success: function(data){
+		        	mostrarMensaje("Se actualizó crorectamente a la mascota "+data.idmascota);
+		        	 limpiarFormMascota();
+		        	  listarMascotas();
+		        	  //$("#nuevo").modal("hide");
+		          },
+		          error: function(message){
+		        	  console.log(message);
+		        	  mostrarMensaje(message.responseJSON.detail);
+		          }
+		     });
+	    }
+	    
+	    
+	 
 	  $("#btn_eliminar").click(function(){
-
+		var cod=$("#idEliminar").val();
      	  $("#eliminar").modal("hide");
     	$.ajax({
-            type: "POST",
-            url: "eliminaMascota", 
-            data: $('#id_form_elimina').serialize(),
+            type: "DELETE",
+            url: "http://localhost:8090/mascota/elimina/"+cod, 
+            //data: $('#id_form_elimina').serialize(),
             success: function(data){
           	  listarMascotas();
-          	  mostrarMensaje(data.mensaje);
+          	  mostrarMensaje(MSG_ELIMINADO);
             },
             error: function(){
           	  mostrarMensaje(MSG_ERROR);

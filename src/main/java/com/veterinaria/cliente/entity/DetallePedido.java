@@ -2,10 +2,6 @@ package com.veterinaria.cliente.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,15 +17,15 @@ public class DetallePedido implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@EmbeddedId
+	//@EmbeddedId
 	private DetallePedidoPK detallePK;
 	
-	@ManyToOne
-	@JoinColumn(name = "idpedido",nullable = false, insertable = false, updatable = false)
+	//@ManyToOne
+	//@JoinColumn(name = "idpedido",nullable = false, insertable = false, updatable = false)
 	private Pedido pedido;
 	
-	@ManyToOne
-	@JoinColumn(name = "idproducto", nullable = false, insertable = false, updatable = false)
+	//@ManyToOne
+	//@JoinColumn(name = "idproducto", nullable = false, insertable = false, updatable = false)
 	private Producto producto;
 	
 	private int cantidad;

@@ -1,11 +1,4 @@
 package com.veterinaria.cliente.entity;
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -19,9 +12,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Servicio {
-	@Id
+	/*@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
-	@Column (name = "idservicio")
+	@Column (name = "idservicio")*/
 	private int idservicio;
 	private String nombre;
 	private double precio;
@@ -31,8 +24,8 @@ public class Servicio {
 	private String foto;
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idcategoria")
+	/*@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "idcategoria")*/
 	private Categoria idcategoria;
 	
 }

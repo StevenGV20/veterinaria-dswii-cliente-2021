@@ -1,21 +1,17 @@
 package com.veterinaria.cliente.entity;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 public class Acceso {
 
-	@EmbeddedId
+	//@EmbeddedId
 	private AccesoPK accesoPK;
 	
 	
-	@ManyToOne
-	@JoinColumn(name = "idrol", nullable = false, insertable = false, updatable = false)
+	//@ManyToOne
+	//@JoinColumn(name = "idrol", nullable = false, insertable = false, updatable = false)
 	private Rol rol;
 	
-	@ManyToOne
-	@JoinColumn(name = "idopcion", nullable = false, insertable = false, updatable = false)
+	//@ManyToOne
+	//@JoinColumn(name = "idopcion", nullable = false, insertable = false, updatable = false)
 	private Opcion opcion;
 
 	public AccesoPK getAccesoPK() {

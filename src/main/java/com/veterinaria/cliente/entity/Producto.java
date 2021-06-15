@@ -1,13 +1,5 @@
 package com.veterinaria.cliente.entity;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import org.springframework.format.annotation.NumberFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,9 +14,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Producto {
-	@Id
+	/*@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
-	@Column (name = "idproducto")
+	@Column (name = "idproducto")*/
 	private int idproducto;
 	private String nombre;
 	@NumberFormat(pattern = "##.##")
@@ -37,11 +29,13 @@ public class Producto {
 	private String foto2;
 	private String foto3;
 	
+	
+	 
 	//private Categoria idcategoria;
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idcategoria")
+	//@ManyToOne(fetch = FetchType.LAZY)
+	//@JoinColumn(name = "idcategoria")
 	private Categoria idcategoria;
 
 	/*

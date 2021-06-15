@@ -137,10 +137,15 @@
                                                 ${requestScope.objProducto.stock}
                                             </div> 
                                         </div>
+                                        <div class="p-size">
+                                            <button class="btn border" onclick="compartirEnlace()"><i class="fas fa-share-alt"></i> Compartir</button>
+                                            
+                                        </div>
                                         <c:if test="${requestScope.objProducto.stock > 5}">
-	                                        <div class="action">
-	                                            <a class="btn border agregar-carrito" href="#"><i class="fa fa-shopping-cart"></i>Agregar al carrito</a>
-	                                            <a class="btn border" href="verListaProductos" onclick="window.location='verListaProductos'"><i class="fa fa-shopping-bag"></i>Seguir Comprando</a>
+	                                        <div class="action ">
+	                                            <a class="btn border agregar-carrito " href="#"><i class="fa fa-shopping-cart"></i>Agregar al carrito</a>
+	                                            <a class="btn borde " href="verListaProductos" onclick="window.location='verListaProductos'"><i class="fa fa-shopping-bag"></i>Seguir Comprando</a>
+	                                            
 	                                        </div>                                     
                                         </c:if>
                                          <c:if test="${requestScope.objProducto.stock < 6}">
@@ -491,6 +496,24 @@
         <script src="js/main.js"></script>
         
         <script type="text/javascript">
+        
+        function compartirEnlace() {
+        	  var URLactual = window.location;
+	    	  var aux = document.createElement("input");
+	    	  aux.setAttribute("value", URLactual);
+	    	  document.body.appendChild(aux);
+	    	  aux.select();
+	    	  document.execCommand("copy");
+	    	  document.body.removeChild(aux);
+	    	  Swal.fire({
+	                //type: 'info',
+	                //title: 'Oops...',
+	                //text: 'El producto se actulizo correctamente',
+	                text: 'Se copio el enlace al portapapeles',
+	                showConfirmButton: false,
+	                timer: 1500
+	            })
+	    }
 
 	$(document).ready(function(){
 		$(".cantidad").click(function(){

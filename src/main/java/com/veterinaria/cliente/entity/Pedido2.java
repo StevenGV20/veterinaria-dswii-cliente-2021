@@ -1,15 +1,6 @@
 package com.veterinaria.cliente.entity;
-import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,20 +13,22 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+//@Entity
+//@Table(name = "pedido2")
 public class Pedido2 {
-	@Id
+	/*@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="idpedido")
+	@Column(name="idpedido")*/
 	private int idpedido;
 	private String nombre;
 	private String regPedido;	
 	
-	@Temporal(TemporalType.TIMESTAMP)
+	//@Temporal(TemporalType.TIMESTAMP)
 	private Date fechaPedido;
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idrol")
+	//@ManyToOne(fetch = FetchType.LAZY)
+	//@JoinColumn(name = "idrol")
 	private Rol idrol;
 
 }

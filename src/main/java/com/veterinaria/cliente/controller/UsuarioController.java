@@ -3,6 +3,7 @@ package com.veterinaria.cliente.controller;
 import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpEntity;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,8 +24,14 @@ public class UsuarioController {
 
 	private String REST_USUARIO="http://localhost:8090/usuario/";
 	
+	@RequestMapping("/failureLogin")
+	public String failureLogin(HttpSession session) {
+		session.setAttribute("MENSAJE", "El usuario no existe");
+		return "login";
+	}
+	
 	@RequestMapping("/login")
-	public String iniciarSesion(Usuario bean, HttpSession session, HttpServletRequest request){
+	public String iniciarSesion(Usuario bean, HttpSession session){
 		//Map<String, Object> map=new HashMap<String, Object>();
 		try {
 			System.out.println("INICIO");
@@ -39,13 +45,15 @@ public class UsuarioController {
 			header.setContentType(mediaType);
 			HttpEntity<String> requests=new HttpEntity<String>(dataJson.toString(),header);
 			//
+			System.out.println("LO CONVIRTIO EN JSON");
 			ResponseEntity<Usuario> response=rt.postForEntity(REST_USUARIO+"login", requests, Usuario.class);
 
 			System.out.println("LEYO AL USUARIO");
 			Usuario usuario=response.getBody();
 			if (usuario == null) {
-				request.setAttribute("MENSAJE", "El usuario no existe");
-				return "verLogin";
+				System.out.println("EL USUARIO NO EXISTE");
+				session.setAttribute("MENSAJE", "El usuario no existe");
+				return "redirect:/verLogin";
 			} else {
 				RestTemplate rte=new RestTemplate();
 				ResponseEntity<Opcion[]> opciones=rte.getForEntity(REST_USUARIO+"traerEnlaces/"+usuario.getIdusuario(), Opcion[].class);
@@ -62,9 +70,24 @@ public class UsuarioController {
 			
 		}catch (Exception e) {
 			e.printStackTrace();
-			return "redirect:/";
+			return "redirect:/failureLogin";
 		}
 		
 	}
 	
+	
+	@RequestMapping("/logout")
+	public String logout(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+		//session.invalidate();
+		session.setAttribute("objUsuario",null);
+		session.setAttribute("objMenus", null);
+		
+		response.setHeader("Cache-control", "no-cache");
+		response.setHeader("Expires", "0");
+		response.setHeader("Pragma", "no-cache");
+
+		request.setAttribute("mensaje", "El usuario saliÃ³ de sesiÃ³n");
+		return "redirect:/verLogin";
+
+	}
 }

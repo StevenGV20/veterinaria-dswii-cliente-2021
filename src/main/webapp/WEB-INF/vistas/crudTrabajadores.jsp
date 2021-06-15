@@ -101,7 +101,7 @@
                             <h6 class="m-0 font-weight-bold text-primary">Lista de Trabajadores</h6>
                         </div>
                         <div class="cont_mant ml-2">
-							<button type="button" class="btn btn-info mt-4" data-toggle="modal" data-target="#nuevo">Nuevo <i class="fa fa-plus-circle" aria-hidden="true"></i></button>  
+							<button type="button" class="btn btn-info mt-4" onclick="$('#nuevo').modal('show')">Nuevo <i class="fa fa-plus-circle" aria-hidden="true"></i></button>  
 						</div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -204,8 +204,8 @@
                           	<label>Sexo</label>
 							<select id="idSexo"  class="input" name="sexo">	
 								<option>[ Seleccione ]</option>
-								<option value="1">MASCULINO</option>
-								<option value="2`">FEMENINO</option>
+								<option value="MASCULINO">MASCULINO</option>
+								<option value="FEMENINO">FEMENINO</option>
 							</select>
 						 </fieldset>
                         </div>
@@ -343,7 +343,7 @@
     	var cod=$(this).parents('tr').find("td")[0].innerHTML;
     	$("#idDivPassword").hide();
     	$("#idCorreo").parent().parent().attr("class","col-md-12");
-    	$.getJSON("buscaUsuarioXID",{id:cod},function(data){
+    	$.getJSON("http://localhost:8090/usuario/buscaUsuarioXID",{id:cod},function(data){
     		$("#idCodigo").val(data.idusuario);
     		$("#idNombre").val(data.nombre);
     		$("#idApellido").val(data.apellido);
@@ -351,6 +351,7 @@
     		$("#idTelefono").val(data.telefono);
     		$("#idDni").val(data.dni);
     		$("#idCorreo").val(data.correo);
+    		$("#idSexo").val(data.sexo);
     		$("#idPassword").val(data.password);
     		$("#idDistrito").val(data.iddistrito.iddistrito);
     		$("#idRol").val(data.idrol.idrol);
@@ -366,8 +367,10 @@ $(document).on("click","#btnEliminar",(function(){
 
 
 function listarTablas(){
+	$('#tbPersonal').DataTable().clear();
+	 $('#tbPersonal').DataTable().destroy();
 	$('#tbPersonal tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("listaPersonalTrabajo",{},function(listar, q, t){
+	$.getJSON("http://localhost:8090/usuario/listaPersonalTrabajo",{},function(listar, q, t){
 		console.log(listar);
 		
 		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
@@ -407,16 +410,17 @@ $(document).ready( function () {
     listarTablas();
     $("#btnCancelar").click(function(){
     	limpiarForm();
+    	$("#nuevo").modal("hide");
     });
 
-    $.getJSON("listaDistritos",{},function(data, q,t){
+    $.getJSON("http://localhost:8090/combo/distrito",{},function(data, q,t){
         console.log(data);
 		$.each(data,function(index,item){
 			$("#idDistrito").append("<option value='"+item.iddistrito+"'>"+item.nombre+"</option>");
 		})
     })
     
-    $.getJSON("listaRol",{},function(data, q,t){
+    $.getJSON("http://localhost:8090/combo/rol",{},function(data, q,t){
         console.log(data);
 		$.each(data,function(index,item){
 			if(item.idrol!=1)
@@ -428,33 +432,64 @@ $(document).ready( function () {
     	var validator = $('#idRegistrar').data('bootstrapValidator');
 	    validator.validate();
 	    if (validator.isValid()) {
-	    	$.ajax({
-		          type: "POST",
-		          url: "registrarUsuario", 
-		          data: $('#idRegistrar').serialize(),
-		          success: function(data){
-		        	listarTablas();
-		        	limpiarForm();
-		        	mostrarMensaje(data.mensaje);
-		        	$("#nuevo").on("hide",function(){console.log('hide');});
-		          },
-		          error: function(){
-		        	  mostrarMensaje(MSG_ERROR);
-		          }
-		     });
+	    	if($("#idCodigo").val()>0){
+	    		actualiza();
+	    	}else{
+	    		registrar();
+	    	}
+	    	$("#nuevo").modal("hide");
 		}
 		    
 	  });
     
+    function registrar(){
+    	$.ajax({
+    		  type: "POST",
+	          data: JSON.stringify(leerUsuario()),
+	          url: "http://localhost:8090/usuario/registrarUsuario", 
+	          contentType: "application/json",
+	          success: function(data){
+	        	mostrarMensaje("Se registro crorectamente el usuario "+data.idusuario);
+	        	listarTablas();
+	        	limpiarForm();
+	          },
+	          error: function(message){
+	        	  console.log(message);
+	        	  mostrarMensaje(message.responseJSON.detail);
+	          }
+	     });
+    }
+    
+    function actualiza(){
+    	$.ajax({
+	          type: "PUT",
+	          data: JSON.stringify(leerUsuario()),
+	          url: "http://localhost:8090/usuario/actualizaUsuario", 
+	          contentType: "application/json",
+	          success: function(data){
+	        	listarTablas();
+	        	mostrarMensaje("Se actualizó crorectamente el usuario "+data.idusuario);
+	        	limpiarForm();
+	          },
+	          error: function(message){
+	        	  console.log(message);
+	        	  mostrarMensaje(message.responseJSON.detail);
+	          }
+	     });
+    }
+    
+    
+    
     $("#btn_eliminar").click(function(){
    	 $("#eliminar").modal("hide");
+   	 //var id=$("#idEliminar").val();
     	$.ajax({
-            type: "POST",
-            url: "eliminaUsuario", 
+            type: "DELETE",
+            url: "http://localhost:8090/usuario/eliminaUsuario/", 
             data: $('#id_form_elimina').serialize(),
             success: function(data){           	 
 	           	 listarTablas();
-	           	 mostrarMensaje(data.mensaje);
+	           	 mostrarMensaje("Se elimino correctamente al usuario");
             },
             error: function(){
           	  mostrarMensaje(MSG_ERROR);
@@ -544,7 +579,8 @@ $(document).ready( function () {
                         notEmpty: {    
                             message: ''    
                         },      
-                        integer: {    
+                        regexp: {   
+                        	regexp: /^[A-Z]+$/,    
                             message: 'Elija un Sexo'    
                         },     
                     }    
