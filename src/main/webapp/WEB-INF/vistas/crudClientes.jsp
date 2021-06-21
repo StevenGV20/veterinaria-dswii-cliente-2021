@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
  <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==1}">
+    <c:if test="${sessionScope.objUsuario.idrol==1}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -332,7 +332,10 @@
 
 	$(document).on("click","#btnEditar",(function(){
 		var cod=$(this).parents('tr').find("td")[0].innerHTML;
-		$.getJSON("http://localhost:8090/usuario/buscaUsuarioXID",{id:cod},function(data){
+		$.ajax( settingsRegistro("http://localhost:8090/usuario/buscaUsuarioXID?id="+cod,"GET","",
+				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+		).done(function (data) {
+		  console.log(data);
 			$("#idCodigo").val(data.idusuario);
 			$("#idNombre").val(data.nombre);
 			$("#idApellido").val(data.apellido);
@@ -373,21 +376,25 @@ function listarTablas(){
 	$('#tbClientes').DataTable().clear();
 	 $('#tbClientes').DataTable().destroy();
 	$('#tbClientes tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
+	
+	$.ajax(settingsRegistro("http://localhost:8090/cliente/lista","GET","",
+			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+	).done(function (response) {
+		  console.log(response);
+		  var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
+			var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
+			$("#tbClientes tbody").empty();
+			$.each(response,function(index,item){
+				$("#tbClientes tbody").append("<tr><td>"+item.idusuario+"</td><td>"+item.nombre+"</td><td>"+item.apellido+"</td><td>"+item.dni+
+						"</td><td>"+item.telefono+"</td><td>"+item.correo+"</td><td>"+item.iddistrito.nombre+
+						"</td><td><a href='verMascotasByCliente?cod="+item.idusuario+"' class='btn btn-warning' target='_blank'>Admin. Mascotas</a></td><td>"+
+						editar+"</td><td>"+eliminar+"</td></tr>");
+			})
+			  $("#tbClientes").DataTable();
+	});
+/*
 	$.getJSON("http://localhost:8090/cliente/lista",{},function(listar, q, t){
-		//console.log(listar);
-		
-		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
-		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
-
-		$("#tbClientes tbody").empty();
-		$.each(listar,function(index,item){
-			$("#tbClientes tbody").append("<tr><td>"+item.idusuario+"</td><td>"+item.nombre+"</td><td>"+item.apellido+"</td><td>"+item.dni+
-					"</td><td>"+item.telefono+"</td><td>"+item.correo+"</td><td>"+item.iddistrito.nombre+
-					"</td><td><a href='verMascotasByCliente?cod="+item.idusuario+"' class='btn btn-warning' target='_blank'>Admin. Mascotas</a></td><td>"+
-					editar+"</td><td>"+eliminar+"</td></tr>");
-		})
-		  $("#tbClientes").DataTable();
-    })
+    })*/
 	
 }
 
@@ -441,39 +448,32 @@ $(document).ready( function () {
 		    
 	  });
     function registrar(){
-    	$.ajax({
-    		  type: "POST",
-	          data: JSON.stringify(leerCliente()),
-	          url: "http://localhost:8090/cliente/registra", 
-	          contentType: "application/json",
-	          success: function(data){
-	        	listarTablas();
-	        	mostrarMensaje("Se registro crorectamente el usuario "+data.idusuario);
-	        	limpiarFormCliente();
-	          },
-	          error: function(message){
-	        	  console.log(message);
-	        	  mostrarMensaje(message.responseJSON.detail);
-	          }
-	     });
+    	$.ajax( 
+       			settingsRegistro("http://localhost:8090/cliente/registra","POST",leerCliente(),
+           				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+        	).done(function (response) {
+        		listarTablas();
+            	mostrarMensaje("Se actualizó crorectamente el usuario "+response.idusuario);
+            	limpiarFormCliente();
+        	})
+        	.fail(function(mensaje) {
+    			mostrarMensaje(mensaje.responseJSON.detail);
+    		});
     }
     
     function actualiza(){
-    	$.ajax({
-	          type: "PUT",
-	          data: JSON.stringify(leerCliente()),
-	          url: "http://localhost:8090/cliente/actualiza", 
-	          contentType: "application/json",
-	          success: function(data){
-	        	listarTablas();
-	        	mostrarMensaje("Se actualizó crorectamente el usuario "+data.idusuario);
-	        	limpiarFormCliente();
-	          },
-	          error: function(message){
-	        	  console.log(message);
-	        	  mostrarMensaje(message.responseJSON.detail);
-	          }
-	     });
+    	
+    	$.ajax( 
+   			settingsRegistro("http://localhost:8090/cliente/actualiza","PUT",leerCliente(),
+       				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+    	).done(function (response) {
+    		listarTablas();
+        	mostrarMensaje("Se actualizó crorectamente el usuario "+response.idusuario);
+        	limpiarFormCliente();
+    	})
+    	.fail(function(mensaje) {
+			mostrarMensaje(mensaje.responseJSON.detail);
+		});
     }
     
     
@@ -507,18 +507,19 @@ $(document).ready( function () {
     
     $("#btn_eliminar").click(function(){
    	 $("#eliminar").modal("hide");
-    	$.ajax({
-            type: "DELETE",
-            url: "http://localhost:8090/usuario/eliminaUsuario/", 
-            data: $('#id_form_elimina').serialize(),
-            success: function(data){           	 
-	           	 listarTablas();
-	           	 mostrarMensaje("Se elimino correctamente");
-            },
-            error: function(){
-          	  mostrarMensaje(MSG_ERROR);
-            }
-       });
+   	 	var cod=$("#idEliminar").val();
+   		$.ajax( 
+   			settingsRegistro("http://localhost:8090/usuario/eliminaUsuario?id="+cod,"DELETE","",
+       				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+    	).done(function (response) {
+        	mostrarMensaje("Se elimino crorectamente el usuario "+cod);
+    		listarTablas();
+        	limpiarFormCliente();
+    	})
+    	.fail(function(mensaje) {
+    		console.log(mensaje);
+			mostrarMensaje(mensaje.responseJSON.detail);
+		});
     });
     
     

@@ -16,7 +16,7 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-			<c:if test="${sessionScope.objUsuario.idrol.idrol!=1}">
+			<c:if test="${sessionScope.objUsuario.idrol!=1}">
 				<li class="nav-item active">
 	                <a class="nav-link" href="verInicioAdmin">
 	                    <i class="fas fa-fw fa-tachometer-alt"></i>

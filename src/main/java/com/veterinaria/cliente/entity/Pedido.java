@@ -28,7 +28,7 @@ public class Pedido {
 	@Timestamp(value = "yyyy-MM-dd HH:mm:ss")
 	//@Temporal(TemporalType.TIMESTAMP)
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private Date fechaRegistro=new Date();
+	private Date fechaRegistro;
 	
 	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
 	//@ManyToOne(fetch = FetchType.LAZY)

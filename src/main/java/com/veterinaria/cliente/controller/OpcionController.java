@@ -3,6 +3,10 @@ package com.veterinaria.cliente.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -11,9 +15,14 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.client.RestTemplate;
 
 import com.veterinaria.cliente.entity.Cita;
+import com.veterinaria.cliente.entity.DetallePedidoUsuario;
 import com.veterinaria.cliente.entity.Mascota;
+import com.veterinaria.cliente.entity.Opcion;
+import com.veterinaria.cliente.entity.PageProductos;
+import com.veterinaria.cliente.entity.PageServicios;
 import com.veterinaria.cliente.entity.Producto;
 import com.veterinaria.cliente.entity.Servicio;
+import com.veterinaria.cliente.entity.Token;
 import com.veterinaria.cliente.entity.Tracking;
 import com.veterinaria.cliente.entity.Usuario;
 
@@ -48,9 +57,31 @@ public class OpcionController {
 		return response.getBody();
 	}
 	
-	Mascota[] listaMascotasByCliente(int cod) {
+	PageProductos[] listaProductosByPage() {
 		RestTemplate rt=new RestTemplate();
-		ResponseEntity<Mascota[]> response=rt.getForEntity(REST_MASCOTAS+"listaMascotasByCliente/"+cod, Mascota[].class);
+		ResponseEntity<PageProductos[]> response=rt.getForEntity(REST_PRODUCTOS+"listaByPage/0", PageProductos[].class);
+		return response.getBody();
+	}
+	
+	PageServicios[] listaServiciosByPage() {
+		RestTemplate rt=new RestTemplate();
+		ResponseEntity<PageServicios[]> response=rt.getForEntity(REST_SERVICIOS+"listaByPage?page=0&size=6", PageServicios[].class);
+		return response.getBody();
+	}
+	
+	Mascota[] listaMascotasByCliente(int cod,Token user) {
+		HttpHeaders headerRp=new HttpHeaders();
+		//MediaType mediaTypeRp=new MediaType("application","json");
+		headerRp.setContentType(MediaType.APPLICATION_JSON);
+		//headerRp.setBearerAuth(token.getAccess_token());
+		System.out.println("TOKEN: "+user.getAccess_token()); 
+		headerRp.add("Authorization","Bearer "+ user.getAccess_token());
+		headerRp.add("Cookie", user.getJti());
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headerRp);
+		
+		RestTemplate rt=new RestTemplate();
+		ResponseEntity<Mascota[]> response=rt.exchange(REST_MASCOTAS+"listaMascotasByCliente/"+cod,
+				HttpMethod.GET, entity,Mascota[].class);
 		return response.getBody();
 	}
 	
@@ -68,9 +99,18 @@ public class OpcionController {
 		return response.getBody();
 	}
 	
-	Mascota buscarMascotaById(int cod) {
+	Mascota buscarMascotaById(Token user) {
+		HttpHeaders headerRp=new HttpHeaders();
+		//MediaType mediaTypeRp=new MediaType("application","json");
+		headerRp.setContentType(MediaType.APPLICATION_JSON);
+		//headerRp.setBearerAuth(token.getAccess_token());
+		System.out.println("TOKEN: "+user.getAccess_token()); 
+		headerRp.add("Authorization","Bearer "+ user.getAccess_token());
+		headerRp.add("Cookie", user.getJti());
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headerRp);
+		
 		RestTemplate rt=new RestTemplate();
-		ResponseEntity<Mascota> response=rt.getForEntity(REST_MASCOTAS+"buscarMascotaById/"+cod, Mascota.class);
+		ResponseEntity<Mascota> response=rt.exchange(REST_MASCOTAS+"buscarMascotaById/"+user.getIdusuario(), HttpMethod.GET, entity, Mascota.class);
 		return response.getBody();
 	}
 	
@@ -79,10 +119,10 @@ public class OpcionController {
 	
 	@RequestMapping("/")
 	public String verInicio(ModelMap flash) {
-		Producto[] productos= listaProductos();
-		Servicio[] servicios= listaServicios();
-		flash.addAttribute("LISTAPRODUCTOS", productos);
-		flash.addAttribute("LISTASERVICIOS", servicios);
+		//PageProductos[] productos= listaProductosByPage();
+		//PageServicios[] servicios= listaServiciosByPage();
+		//flash.addAttribute("LISTAPRODUCTOS", productos[0].getContent());
+		//flash.addAttribute("LISTASERVICIOS", servicios[0].getContent());
 		return "index";
 	}
 	
@@ -90,20 +130,29 @@ public class OpcionController {
 	
 	@RequestMapping("/verCitas")
 	public String verCitas(HttpSession session,HttpServletRequest request) {
-		Usuario user=(Usuario)session.getAttribute("objUsuario");
+		Token user=(Token)session.getAttribute("objUsuario");
+		HttpHeaders headerRp=new HttpHeaders();
+		//MediaType mediaTypeRp=new MediaType("application","json");
+		headerRp.setContentType(MediaType.APPLICATION_JSON);
+		//headerRp.setBearerAuth(token.getAccess_token());
+		System.out.println("TOKEN: "+user.getAccess_token()); 
+		headerRp.add("Authorization","Bearer "+ user.getAccess_token());
+		headerRp.add("Cookie", user.getJti());
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headerRp);
+		
 		RestTemplate rt=new RestTemplate();
 		ResponseEntity<Cita[]> response=null;
 		Cita[] lista= null;
-		if(user.getIdrol().getIdrol()<2) {
-			response=rt.getForEntity(REST_CITA+"listaCitaByCliente/"+user.getIdusuario(), Cita[].class);
+		if(user.getIdrol()<2) {
+			response=rt.exchange(REST_CITA+"listaCitaByCliente/"+user.getIdusuario(), HttpMethod.GET, entity, Cita[].class);
 			lista=response.getBody();
 			request.setAttribute("citas", lista);
-		}else if(user.getIdrol().getIdrol()<4) {
-			response=rt.getForEntity(REST_CITA+"listAll", Cita[].class);
+		}else if(user.getIdrol()<4) {
+			response=rt.exchange(REST_CITA+"listAll", HttpMethod.GET, entity, Cita[].class);
 			lista=response.getBody();
 			request.setAttribute("citas", lista);
-		}else if(user.getIdrol().getIdrol()==5) {
-			response=rt.getForEntity(REST_CITA+"listarCitaByVeterinario/"+user.getIdusuario(), Cita[].class);
+		}else if(user.getIdrol()==5) {
+			response=rt.exchange(REST_CITA+"listarCitaByVeterinario/"+user.getIdusuario(), HttpMethod.GET, entity, Cita[].class);
 			lista=response.getBody();
 			request.setAttribute("citas", lista);
 		}
@@ -112,16 +161,17 @@ public class OpcionController {
 	
 	@RequestMapping("/verMisMascotas")
 	public String verCrudMascotas(HttpSession session,HttpServletRequest request) {
-		Usuario usu=(Usuario) session.getAttribute("objUsuario");
-		Mascota[] lista= listaMascotasByCliente(usu.getIdusuario());
+		Token usu=(Token) session.getAttribute("objUsuario");
+		Mascota[] lista= listaMascotasByCliente(usu.getIdusuario(),usu);
 		request.setAttribute("mascotas", lista);
 		request.setAttribute("codCliente", usu.getIdusuario());
 		return "misMascotas";
 	}
 	
 	@RequestMapping("/verMascotasByCliente")
-	public String verMascotasByCliente(int cod,HttpServletRequest request) {
-		Mascota[] lista= listaMascotasByCliente(cod);
+	public String verMascotasByCliente(int cod,HttpServletRequest request,HttpSession session) {
+		Token usu=(Token) session.getAttribute("objUsuario");
+		Mascota[] lista= listaMascotasByCliente(cod,usu);
 		request.setAttribute("mascotas", lista);
 		request.setAttribute("codCliente", cod);
 		return "misMascotas";
@@ -129,24 +179,69 @@ public class OpcionController {
 	
 	@RequestMapping("/verMisPedidos")
 	public String verMisPedidos(HttpSession session,HttpServletRequest request) {
-		Usuario user=(Usuario)session.getAttribute("objUsuario");
+		Token user=(Token)session.getAttribute("objUsuario");
 		RestTemplate rt=new RestTemplate();
 		ResponseEntity<Tracking[]> response=null;
+		
+		HttpHeaders headerRp=new HttpHeaders();
+		//MediaType mediaTypeRp=new MediaType("application","json");
+		headerRp.setContentType(MediaType.APPLICATION_JSON);
+		//headerRp.setBearerAuth(token.getAccess_token());
+		System.out.println("TOKEN: "+user.getAccess_token()); 
+		headerRp.add("Authorization","Bearer "+ user.getAccess_token());
+		headerRp.add("Cookie", user.getJti());
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headerRp);		
+		
 		Tracking[] lista= null;
-		if(user.getIdrol().getIdrol()<2) {
-			response=rt.getForEntity(REST_TRACKING+"listaByCliente/"+user.getIdusuario(), Tracking[].class);
+		if(user.getIdrol()<2) {
+			response=rt.exchange(REST_TRACKING+"listaByCliente/"+user.getIdusuario(), HttpMethod.GET, entity, Tracking[].class);
 			lista=response.getBody();
 			request.setAttribute("pedidos", lista);
-		}else if(user.getIdrol().getIdrol()<4) {
-			response=rt.getForEntity(REST_TRACKING+"listaAll", Tracking[].class);
+		}else if(user.getIdrol()<4) {
+			response=rt.exchange(REST_TRACKING+"listaAll", HttpMethod.GET, entity, Tracking[].class);
 			lista= response.getBody();
 			request.setAttribute("pedidos", lista);
-		}else if(user.getIdrol().getIdrol()==4) {
-			response=rt.getForEntity(REST_TRACKING+"listaByTrabajador/"+user.getIdusuario(), Tracking[].class);
+		}else if(user.getIdrol()==4) {
+			response=rt.exchange(REST_TRACKING+"listaByTrabajador/"+user.getIdusuario(), HttpMethod.GET, entity, Tracking[].class);
 			lista= response.getBody();
 			request.setAttribute("pedidos", lista);
 		}
 		return "misPedidos";
+	}
+
+	@RequestMapping("/consultarTracking")
+	public String consultarTracking(int cod,HttpServletRequest request,HttpSession session) {
+		if(!(cod+"").matches("[0-9]{1,}")) {
+			System.out.println("HOLASSS");
+			return "redirect:/";			
+		}
+		else {
+			Token user=(Token)session.getAttribute("objUsuario");
+			RestTemplate rt=new RestTemplate();
+			ResponseEntity<Tracking> responseTra=null;
+			ResponseEntity<DetallePedidoUsuario[]> responseDet=null;
+			
+			HttpHeaders headerRp=new HttpHeaders();
+			//MediaType mediaTypeRp=new MediaType("application","json");
+			headerRp.setContentType(MediaType.APPLICATION_JSON);
+			//headerRp.setBearerAuth(token.getAccess_token());
+			System.out.println("TOKEN: "+user.getAccess_token()); 
+			headerRp.add("Authorization","Bearer "+ user.getAccess_token());
+			headerRp.add("Cookie", user.getJti());
+			HttpEntity<String> entity = new HttpEntity<String>("parameters", headerRp);	
+			
+			responseTra=rt.exchange(REST_TRACKING+"buscaByPedido/"+cod, 
+					HttpMethod.GET, entity, Tracking.class);
+			
+			responseDet=rt.exchange(REST_TRACKING+"buscarHistorialPedido/"+cod,
+					HttpMethod.GET, entity, DetallePedidoUsuario[].class);
+			Tracking track=responseTra.getBody();
+			DetallePedidoUsuario[] historial = responseDet.getBody();
+			request.setAttribute("tracking", track);
+			request.setAttribute("historial", historial);
+			return "pedidoTracking";
+		}
+			
 	}
 	
 	
@@ -176,7 +271,7 @@ public class OpcionController {
 	
 	@RequestMapping("/verTracking")
 	public String verTracking() {
-		return "tracking";
+		return "pedidoTracking";
 	}
 
 		
@@ -267,6 +362,7 @@ public class OpcionController {
 	public String verRegistroDeCliente() {
 		return "registroCliente";
 	}
+	
 	
 	@RequestMapping("/verRegistroConsultas")
 	public String verRegistroConsultas() {	return "registroConsultas";	}

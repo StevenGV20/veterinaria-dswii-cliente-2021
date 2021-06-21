@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -91,7 +91,7 @@
                     <!-- Page Heading -->
                     <h1 class="h3 text-gray-800">Mis Pedidos</h1>
                     <p class="">En esta seccion podras ver todos tus pedidos realizados y consultar el estado en que se encuentran.</p>
-					<input value="${sessionScope.objUsuario.idrol.idrol}" id="txtIdRol" hidden=""/>
+					<input value="${sessionScope.objUsuario.idrol}" id="txtIdRol" hidden=""/>
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4 col-md-9" style="margin-left: 12%;">
                         <div class="card-header py-3">
@@ -108,7 +108,7 @@
                                             <th>Hora de Atencion</th>
                                             <th>Estado</th>
                                             <th>Servicio</th>
-                                            <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
+                                            <c:if test="${(sessionScope.objUsuario.idrol==2) or (sessionScope.objUsuario.idrol==3)}">
                                             	<th>Cliente</th>
                                             	<th></th>
                                             </c:if>
@@ -122,7 +122,7 @@
                                             <th>Hora de Atencion</th>
                                             <th>Estado</th>
                                             <th>Servicio</th>
-                                            <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
+                                            <c:if test="${(sessionScope.objUsuario.idrol==2) or (sessionScope.objUsuario.idrol==3)}">
                                             	<th>Cliente</th>
                                             	<th></th>
                                             </c:if>
@@ -132,12 +132,12 @@
                                     	<c:forEach items="${requestScope.citas}" var="item">
                                     		<tr>
 	                                        	<td>${item.idcita}</td>
-	                                            <td>${item.strFechaNacFormateada}</td>
-	                                            <td>${item.strFechaAteFormateada}</td>
-	                                            <td>${item.strHoraAteFormateada}</td>
+	                                            <td>${item.fechaRegistro}</td>
+	                                            <td>${item.fechaAtencion}</td>
+	                                            <td>${item.horaAtencion}</td>
 	                                            <td>${item.estado}</td>
 	                                            <td>${item.servicio.nombre}</td>
-	                                            <c:if test="${sessionScope.objUsuario.idrol.idrol==2 || sessionScope.objUsuario.idrol.idrol==3}">
+	                                            <c:if test="${sessionScope.objUsuario.idrol==2 || sessionScope.objUsuario.idrol==3}">
 	                                            	<td>${item.cliente.nombre} ${item.cliente.apellido}</td>
 	                                            	<c:if test="${item.estado!='PENDIENTE'}">
 	                                            		<td><button data-toggle='modal' disabled="disabled"  data-target='#asignar' class="btn btn-warning" id="btnAsignar">Asignar <i class="fas fa-user-check"></i></button></td>

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
   <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -34,6 +34,7 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
 	<link rel="stylesheet" href="css/estilos.css">
 
+   
     <!-- Custom styles for this page -->
     <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.2/css/bootstrapValidator.min.css"/>
@@ -133,19 +134,7 @@
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                    	<c:forEach items="${requestScope.mascotas}" var="item">
-	                                        <tr>
-									            <td class="">${item.idmascota}</td>
-									            <td class="">${item.nombre}</td>
-									            <td class="">${item.raza}</td>
-									            <td class="">${item.sexo}</td>
-									            <td class="">${item.strFechaNacFormateada}</td>
-									            <td class="">${item.idespecie.nombre}</td>
-									            <td class="">${item.cliente.nombre}</td>
-									            <td class=""><a href="#" id="btnEditar"  class="btn btn-success">Editar</a></td>
-									            <td class=""><a href="#" id="btnEliminar"  class="btn btn-danger" data-toggle="modal" data-target="#eliminar">Eliminar</a></td>
-									        </tr>
-                                    	</c:forEach>
+                                    	
                                     </tbody>
                                 </table>
                             </div>
@@ -320,12 +309,12 @@
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
-    <!-- Page level custom scripts -->
+    <!-- Page level custom scripts
+    <script src="js/entity.js"></script> -->
     <script src="js/demo/datatables-demo.js"></script>
-    	<script src="js/global.js"></script>
-    
+    <script src="js/global.js"></script>
     <script src="popup.js"></script>
-   <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
+   	<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
     <script type="text/javascript">
 
 
@@ -343,16 +332,21 @@ $("#tbClientes").on("click","tbody tr",(function(){
 $(document).on("click","#btnEditar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Editar Mascota");
-	$.getJSON("http://localhost:8090/mascota/buscarMascotaById/"+cod,{},function(data){
-		$("#idCodigo").val(data.idmascota);
-		$("#idCodCliente").val(data.cliente.idusuario);
-		$("#idNombre").val(data.nombre);
-		$("#idEdad").val(data.edad);
-		$("#idRaza").val(data.raza);
-		$("#idFechaNac").val(data.fechaNacimiento);
-		$("#idSexo").val(data.sexo);
-		$("#idEspecie").val(data.idespecie.idespecie);
-	})
+	$.ajax( settingsRegistro("http://localhost:8090/mascota/buscarMascotaById/"+cod,"GET","",
+			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+		).done(function (data) {
+			$("#idCodigo").val(data.idmascota);
+			$("#idCodCliente").val(data.cliente.idusuario);
+			$("#idNombre").val(data.nombre);
+			$("#idEdad").val(data.edad);
+			$("#idRaza").val(data.raza);
+			$("#idFechaNac").val(data.fechaNacimiento);
+			$("#idSexo").val(data.sexo);
+			$("#idEspecie").val(data.idespecie.idespecie);
+		})
+		.fail(function(mensaje) {
+			mostrarMensaje(mensaje);
+		});
 	 $("#nuevo").modal("show");
 	//bloquear(false);
 }));
@@ -369,23 +363,30 @@ function bloquear(b){
 	$("#btnRegistrar").prop("disabled",b);
 }
 
-function listarMascotas(){
+function listarMascotas(cod){
+	$('#dataTable').DataTable().clear();
+	$('#dataTable').DataTable().destroy();
 	$('#dataTable tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	var cod=$("#idCodCliente").val();
-	$.getJSON("http://localhost:8090/mascota/listaMascotasByCliente/"+cod,{},function(listar, q, t){
-		console.log(listar);
-		
-		var editar="<button type='button' class='btn btn-success' id='btnEditar'>Editar</button>";
-		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
+	//var cod=$("#idCodCliente").val();
+	
+	$.ajax( settingsRegistro("http://localhost:8090/mascota/listaMascotasByCliente/"+cod,"GET","",
+			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+		).done(function (listar) {
+			var editar="<button type='button' class='btn btn-success' id='btnEditar'>Editar</button>";
+			var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
 
-		$("#dataTable tbody").empty();
-		$.each(listar,function(index,item){
-			$("#dataTable tbody").append("<tr><td>"+item.idmascota+"</td><td>"+item.nombre+"</td><td>"+item.raza+"</td><td>"+item.sexo+
-					"</td><td>"+item.fechaNacimiento+"</td><td>"+item.idespecie.nombre+"</td><td>"+
-					item.cliente.nombre+" "+item.cliente.apellido+"</td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+			$("#dataTable tbody").empty();
+			$.each(listar,function(index,item){
+				$("#dataTable tbody").append("<tr><td>"+item.idmascota+"</td><td>"+item.nombre+"</td><td>"+item.raza+"</td><td>"+item.sexo+
+						"</td><td>"+item.fechaNacimiento+"</td><td>"+item.idespecie.nombre+"</td><td>"+
+						item.cliente.nombre+" "+item.cliente.apellido+"</td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+			})
+			  $("#dataTable").DataTable();
 		})
-		  $("#dataTable").DataTable();
-    })
+		.fail(function(mensaje) {
+			$("#dataTable tbody").append("<tr>NO SE PUDO CARGAR LA LISTA</tr>");
+		});
+	
 	
 }
 
@@ -404,15 +405,16 @@ $(document).ready( function () {
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
-	
-	 $.getJSON("http://localhost:8090//combo/especie",{},function(data, q,t){
+	listarMascotas("<c:out value ="${requestScope.codCliente}" />");
+	  //$("#dataTable").DataTable();
+	 $.getJSON("http://localhost:8090/combo/especie",{},function(data, q,t){
 	        console.log(data);
 			$.each(data,function(index,item){
 				$("#idEspecie").append("<option value='"+item.idespecie+"'>"+item.nombre+"</option>");
 			})
 	    })
     
-    //alert("Hola");
+    //alert("Hola"); 
     
     $("#btnCancelar").click(function(){
 		//alert("hola");
@@ -435,41 +437,31 @@ $(document).ready( function () {
 		  });
 	 
 	 function registrar(){
-	    	$.ajax({
-		          type: "POST",
-		          data: JSON.stringify(leerMascota()),
-		          url: "http://localhost:8090/mascota/registra", 
-		          contentType: "application/json",
-		          success: function(data){
-		        	mostrarMensaje("Se registro crorectamente a la mascota "+data.idmascota);
+		 $.ajax( settingsRegistro("http://localhost:8090/mascota/registra","POST",leerMascota(),
+					"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+			).done(function (data) {
+				mostrarMensaje("Se registro crorectamente a la mascota "+data.idmascota);
 		        	 limpiarFormMascota();
 		        	  listarMascotas();
-		        	  //$("#nuevo").modal("hide");
-		          },
-		          error: function(message){
-		        	  console.log(message);
-		        	  mostrarMensaje(message.responseJSON.detail);
-		          }
-		     });
+			})
+			.fail(function(mensaje) {
+				mostrarMensaje(mensaje.responseJSON.detail);
+			});
+	    	
 	    }
 	    
 	    function actualiza(){
-	    	$.ajax({
-		          type: "PUT",
-		          data: JSON.stringify(leerMascota()),
-		          url: "http://localhost:8090/mascota/actualiza", 
-		          contentType: "application/json",
-		          success: function(data){
-		        	mostrarMensaje("Se actualizó crorectamente a la mascota "+data.idmascota);
+	    	$.ajax( settingsRegistro("http://localhost:8090/mascota/actualiza","PUT",leerMascota(),
+					"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+			).done(function (data) {
+				mostrarMensaje("Se actualizó crorectamente a la mascota "+data.idmascota);
 		        	 limpiarFormMascota();
 		        	  listarMascotas();
-		        	  //$("#nuevo").modal("hide");
-		          },
-		          error: function(message){
-		        	  console.log(message);
-		        	  mostrarMensaje(message.responseJSON.detail);
-		          }
-		     });
+			})
+			.fail(function(mensaje) {
+				mostrarMensaje(mensaje.responseJSON.detail);
+			});
+	    	
 	    }
 	    
 	    
@@ -477,18 +469,16 @@ $(document).ready( function () {
 	  $("#btn_eliminar").click(function(){
 		var cod=$("#idEliminar").val();
      	  $("#eliminar").modal("hide");
-    	$.ajax({
-            type: "DELETE",
-            url: "http://localhost:8090/mascota/elimina/"+cod, 
-            //data: $('#id_form_elimina').serialize(),
-            success: function(data){
-          	  listarMascotas();
-          	  mostrarMensaje(MSG_ELIMINADO);
-            },
-            error: function(){
-          	  mostrarMensaje(MSG_ERROR);
-            }
-      	 });
+     	 $.ajax( settingsRegistro("http://localhost:8090/mascota/elimina/"+cod,"DELETE","",
+     			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+     		).done(function (data) {
+            	mostrarMensaje(data.detail);
+            	//listarMascotas();
+     		})
+     		.fail(function(mensaje) {
+            	  mostrarMensaje(mensaje.responseJSON.detail);
+     		});
+    	
       });
 	  
 	 

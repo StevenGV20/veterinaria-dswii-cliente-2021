@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
  <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==1}">
+    <c:if test="${sessionScope.objUsuario.idrol==1}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -196,7 +196,7 @@
                     <div class="section-heading">
                       <h2>Registrar Servicio</h2>
                     </div>
-                    <form  method="post" action="servicio/registrarServicio" id="idRegistrar" data-toggle="validator" class="mt-3 form-horizontal">
+                    <form  method="post" action="" id="idRegistrar" data-toggle="validator" class="mt-3 form-horizontal">
                       <div class="row">
                         <div class="col-md-6">
                           <fieldset class="form-group">
@@ -247,7 +247,7 @@
                         
                        
                         <div class="col-md-12 mt-2">
-                          <button type="submit" class="btn__submit" id="btnRegistrar">Registrar</button>  		
+                          <button type="button" class="btn__submit" id="btnRegistrar">Registrar</button>  		
         				  <button type="button" class="btn__reset" id="btnCancelar" data-dismiss="modal">Cancelar</button>
                         </div>
                         
@@ -347,6 +347,7 @@
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
 	<script src="js/global.js"></script>
+	<script src="js/cargaImagenes.js"></script>
     <script src="popup.js"></script>
     
 	
@@ -403,6 +404,8 @@ $(document).on("click","#btnEditar",(function(){
 		$("#idDescripcion").val(data.descripcion);
 		$("#idHorario").val(data.horario);
 		$("#idCategoria").val(data.idcategoria.idcategoria);
+		$("#foto1").attr("src",data.foto);
+		$("#fotos1").val(data.foto);
 		//$("#idFecha").val(data.fecha);
 	})
 }));
@@ -437,14 +440,28 @@ function listarTabla(){
 		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
 		$.each(lista,function(index,item){
 			$("#tbServicios tbody").append("<tr><td>"+item.idservicio+"</td><td>"+item.nombre+"</td><td style='width:40%;'>"+item.descripcion+"</td><td>"+item.horario+"</td><td>"+
-					parseFloat(item.precio).toFixed(2)+"</td><td>"+item.idcategoria.nombre+"</td><td><img src='"+item.foto+"'  alt='No existe' style='width: 200px;'/></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+					parseFloat(item.precio).toFixed(2)+"</td><td>"+item.idcategoria.nombre+
+					"</td><td><img src='img/cargando.gif' id='idFoto"+item.idservicio+"'  alt='No existe' style='width: 200px;'/></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+		
+			setTimeout(function(){ $("#idFoto"+item.idservicio).attr("src",item.foto); }, 1000);
+			setTimeout(function(){ $("#tbServicios").DataTable(); }, 1500);
 		})
 		//$("#tbServicios img").css("width","100%");
-	    $("#tbServicios").DataTable();
+	   // $("#tbServicios").DataTable();
     })
 	
 }
 
+
+function limpiarForm(){
+	var cod=$("#idCodCliente").val();
+	$("#idRegistrar").trigger("reset");
+	$("#idRegistrar").data("bootstrapValidator").resetForm(true);
+	$("#idCodigo").val("0");
+	$("#idCategoria").val("[ Seleccione ]");
+	$("#foto1").attr("src","img/image-not-found.png");
+	$("#fotos1").val("img/image-not-found.png");
+}
 
 $(document).ready( function () {
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
@@ -469,23 +486,45 @@ $(document).ready( function () {
     	$("#idRegistrar").trigger("reset");
 		$("#idRegistrar").data("bootstrapValidator").resetForm(true);
 		$("#idCodServicio").val("0");
+		limpiarForm();
     });
+     
+     $("#btnRegistrar").click(function(){
+     	
+ 		var validator = $('#idRegistrar').data('bootstrapValidator');
+ 	    validator.validate();
+ 	    
+ 	    if (validator.isValid()) {
+ 	    	
+ 	    	$.ajax( settingsRegistro("http://localhost:8090/servicio/registra", "POST", leerServicio(),
+ 	    			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+ 	    		).done(function (data) {
+ 	    			listarTabla();
+ 		        	mostrarMensaje("Se proceso crorectamente el servicio "+data.idservicio);
+ 		        	//guardarFotos(data.idproducto);
+ 		        	limpiarForm();
+ 	    		})
+ 	    		.fail(function(mensaje) {
+ 	    			mostrarMensaje(message.responseJSON.detail);
+ 	    		});
+ 	    	
+ 	    }
+ 		
+     });
      
      $("#btn_eliminar").click(function(){
     	 $("#eliminar").modal("hide");
-     	$.ajax({
-             type: "POST",
-             url: "servicio/eliminaServicio", 
-             data: $('#id_form_elimina').serialize(),
-             success: function(data){
-            	 
-	           	 listarTabla();
+     
+     	var cod=$("#idEliminar").val();
+     	$.ajax( settingsRegistro("http://localhost:8090/servicio/elimina/"+cod, "DELETE", "",
+     			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+     		).done(function (data) {
+     			 listarTabla();
 	           	 mostrarMensaje("Se elimino correctamente.");
-             },
-             error: function(){
-           	  mostrarMensaje(MSG_ERROR);
-             }
-        });
+     		})
+     		.fail(function(mensaje) {
+     			mostrarMensaje(message.responseJSON.detail);
+     		});
      });
     
 } );
@@ -558,10 +597,7 @@ $(document).ready( function () {
             },
          	Foto: {
      	    	selector:'#idFoto',   
-                    validators: {    
-                        notEmpty: {    
-                            message: 'Ingresa una foto'    
-                        },      
+                    validators: {  
                         regexp: {    
                             regexp: /\.(gif|jpe?g|png|webp|bmp)$/i,    
                             message: 'Solo admite formatos: .jpe, .jpg, .png, .webp, .bmp'    

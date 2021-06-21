@@ -51,15 +51,16 @@
 			<c:remove var="MENSAJE"/>
                 <div class="row">
                     <div class="col-md-3 mx-auto" style="width: 200px;">
-                        <form class="login-form" action="usuario/login" method="post">
+                        <form class="login-form" action="" method="post" id="formLogin">
                             <div class="block text-left">
                                 <div class="col-md-12">
                                     <label>Correo:</label>
-                                    <input class="form-control" type="text" id="idCorreo" placeholder="Correo" name="correo"/>
+                                    <input class="form-control" type="text" id="idCorreo" placeholder="Correo" name="username"/>
                                 </div>
                                 <div class="col-md-12">
                                     <label>Contraseña:</label>
                                     <input class="form-control" type="password" id="idClave" placeholder="Contraseña" name="password"/>
+                                    <input class="form-control" hidden="" id="idGrantType" value="password" name="grant_type"/>
                                 </div>
                                 <div class="col-md-12 text-center">
 	                                <div class="col-md-12">
@@ -70,7 +71,7 @@
 	                                    </div>
 	                                </div>
 	                                <div class="col-md-12">
-	                                    <button class="btn border" id="btnLogin" type="submit">Iniciar Sesion</button>
+	                                    <button class="btn border" id="btnLogin" type="button">Iniciar Sesion</button>
 	                                </div>                                
                                 </div>
                             </div>
@@ -189,6 +190,103 @@
         		$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
         			$("#success-alert").slideUp(500);	
         		});
+        		
+
+        	    $("#btnLogin").click(function(){
+        	    	/*var obj={
+        	    		username : $("#idCorreo").val(),
+        	    		password : $("#idClave").val(),
+        	    		grant_type: $("#idGrantType").val()
+        	    		Authorization:"Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHJvbCI6MSwidXNlcl9uYW1lIjoiam9yZ2UuZGlhekBnbWFpbC5jb20iLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiYXBlbGxpZG8iOiJEaWF6IiwiY29ycmVvIjoiam9yZ2UuZGlhekBnbWFpbC5jb20iLCJleHAiOjE2MjQyNTk1OTgsIm5vbWJyZSI6IkpvcmdlIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9DTElFTlRFIl0sImp0aSI6IjA4Nzg5Y2MyLTk0MTktNDU4Mi1hYzRjLTg5MDNkMGEzMjBmZiIsImNsaWVudF9pZCI6ImNsaWVudGVkc3ciLCJpZHVzdWFyaW8iOjU2fQ.Yh9ZGZ3063gkqecCVXy0GfrBtLatAOkGCBY-5_QMTjCaKcIGB8xg4J-2sKDhgwxFeE7s8ffHHwR8LMZ-ltyAD8YtvDErVuTkejj942boQhAyTNdgMlDNk6bMTVeFoRBgE38EJ3SoiExr7TQuaThoQZfPMI1e1DoKGsfs_kkvBvV2xwbnoSgWnBbuVWEuwOFBO1Nhc0Sa5pOGy6YSfPPQaR0Ps9e_TAtKkgJyJkikeCT9uK9NMCuf1E2gmC81sck5dfKlUsFHWejulqk1BV7RCEMSSwbnbEVwOnT8Cdxb0US-A19V6i0kVnK7UZVrL1dByG8s5nCURCNMOkpVO09aeg", 
+        	    		Cookie:"JSESSIONID=08789cc2-9419-4582-ac4c-8903d0a320ff"
+        	    	};
+        	    	alert(JSON.stringify(obj));*/
+        	    	//alert("Hola");
+        	    
+        	    	var url="http://localhost:8090/oauth/token?username="+$("#idCorreo").val()+"&password="+
+        	    			$("#idClave").val()+"&grant_type="+$("#idGrantType").val();
+        	    		var settings = {
+        	  	  		  "url": url,
+        	  	  		  "method": "POST",
+        	  	  		  "timeout": 0,
+        	  	  		  "headers": {
+        	  	  			"Authorization":"Basic Y2xpZW50ZWRzdzpkc3c",
+            	    		"Content-Type": "application/json"
+        	  	  		  }
+        	  	  		};
+        	    		
+        	    		$.ajax(settings)
+        	    			.done(function (response) {
+	        	    		  
+	        	    		  var userToken=response;
+	        	    		  var url2 = "http://localhost:8090/usuario/traerEnlaces/"+response.idusuario;
+	        	    		  var token1 = response.access_token;
+	        	    		  var cookie = response.jti;
+		        	    		  $.ajax(leerLogin(url2,"GET","",token1,cookie))
+		        	    			.done(function (lista) {
+				        	    		  var listado=lista;
+			        	    		  console.log(listado);
+			        	    		  console.log(userToken);
+			        	    		  //$(location).attr('href',"/verInicio?token="+response+"&opcion="+lista);
+			        	    		  
+			        	    		  $.ajax({
+			        	  				url:"usuario/token",
+			        	  				type:"POST",
+			        	  				data:{token : JSON.stringify(userToken), opcion : JSON.stringify(listado)}, 
+			        	  				success: function(result){
+			        	  					$(location).attr('href',"/");
+			        	  				},
+			        	  				error: function(error){
+			        	  					alert("No funciona");
+			        	  				}
+			        	  			});
+			        	    		  //var userToken=response;
+			        	    		  //$(location).attr('href',"/verInicio?");
+		        	    			})
+		        	    			.fail(function(mensaje) {
+						    			mostrarMensaje(MSG_ERROR);
+									});
+	        	    		  //$(location).attr('href',"/verInicio?");
+        	    			})
+        	    			.fail(function(mensaje) {
+				    			mostrarMensaje(MSG_ERROR);
+							});
+        	    		
+        	    		
+        	    		/*
+        		    	$.ajax({
+        		    		  type: "POST",
+        			          url: "usuario/login", 
+        			          data: $("#formLogin").serialize(),
+        			          //contentType: "application/json",
+        			          success: function(data){
+        			        	 mostrarMensaje("Inicio de Sesion correcto");
+        		        		 //$(location).attr('href',"/verLogin");
+        			        	// limpiarFormCliente();
+        			          },
+        			          error: function(message){
+        			        	  console.log(message);
+        			        	  mostrarMensaje(message.responseJSON.detail);
+        			          }
+        			     });*/
+        					    
+        		 });
+        	    
+        	    function leerLogin(url,method,json,token,cookie){
+        	    	var settings = {
+        	  		  "url": url,
+        	  		  "method": method,
+        	  		  "timeout": 0,
+        	  		  "headers": {
+        	  		    "Authorization": "Bearer "+token,
+        				"Content-Type": "application/json",
+        	  		    "Cookie": "JSESSIONID="+cookie
+        	  		  },
+        	  		  "data": JSON.stringify(json),
+        	  		};
+        			 return settings;
+        		}
+        		
         	});
         
         </script>

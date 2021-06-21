@@ -45,7 +45,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-6">    
-                        <form action="registrarCliente" method="post" id="idRegistrarCliente" class="register-form" data-toggle="validator">
+                        <form action="" method="post" id="idRegistrarCliente" class="register-form" data-toggle="validator">
                             <div class="row">
                             	<h4 align="center" class="col-md-12">Datos del Cliente</h4>
                                 <div class="col-md-6">
@@ -306,6 +306,7 @@
 				$("#idDistrito").append("<option value='"+item.iddistrito+"'>"+item.nombre+"</option>");
 			})
 	    })
+	   
 	 /*
 	    $("#btnRegistrar").click(function(){
 	 
@@ -318,23 +319,15 @@
 	    	var validator = $('#idRegistrarCliente').data('bootstrapValidator');
 		    validator.validate();
 		    if (validator.isValid()) {
-		    	$.ajax({
-			          type: "POST",
-			          url: "registrarCliente", 
-			          data: $('#idRegistrarCliente').serialize(),
-			          success: function(data){
-			        	  //listarTabla();
-			        	  mostrarMensaje(data.mensaje);
-			        	  //mostrarIdCliente(data.USUARIO.idusuario);
-			        	 $("#idCliente").val(data.USUARIO.idusuario);
-			        	 bloquearCliente(true);
-			        	 bloquearMascota(false);
-			        	 limpiarFormCliente();
-			          },
-			          error: function(){
-			        	  mostrarMensaje(MSG_ERROR);
-			          }
-			     });
+		    	$.ajax(settingsRegistro("http://localhost:8090/cliente/registra",leerCliente()))
+		    		.done(function (response) {
+		    			mostrarMensaje("Se creo correctamente ya puedes iniciar Sesion");
+				    	alert("Se creo correctamente ya puedes iniciar Sesion");
+		    		})
+		    		.fail(function(mensaje) {
+		    			mostrarMensaje(MSG_ERROR);
+					});
+		    	
 			}
 			    
 		  });

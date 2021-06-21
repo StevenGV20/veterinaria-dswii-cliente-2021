@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
      <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==1}">
+    <c:if test="${sessionScope.objUsuario.idrol==1}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -343,19 +343,23 @@
     	var cod=$(this).parents('tr').find("td")[0].innerHTML;
     	$("#idDivPassword").hide();
     	$("#idCorreo").parent().parent().attr("class","col-md-12");
-    	$.getJSON("http://localhost:8090/usuario/buscaUsuarioXID",{id:cod},function(data){
-    		$("#idCodigo").val(data.idusuario);
-    		$("#idNombre").val(data.nombre);
-    		$("#idApellido").val(data.apellido);
-    		$("#idDireccion").val(data.direccion);
-    		$("#idTelefono").val(data.telefono);
-    		$("#idDni").val(data.dni);
-    		$("#idCorreo").val(data.correo);
-    		$("#idSexo").val(data.sexo);
-    		$("#idPassword").val(data.password);
-    		$("#idDistrito").val(data.iddistrito.iddistrito);
+    	$.ajax( settingsRegistro("http://localhost:8090/usuario/buscaUsuarioXID?id="+cod,"GET","",
+				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+		).done(function (data) {
+		  console.log(data);
+			$("#idCodigo").val(data.idusuario);
+			$("#idNombre").val(data.nombre);
+			$("#idApellido").val(data.apellido);
+			$("#idDireccion").val(data.direccion);
+			$("#idTelefono").val(data.telefono);
+			$("#idDni").val(data.dni);
+			$("#idCorreo").val(data.correo);
+			$("#idSexo").val(data.sexo);
+			$("#idPassword").val(data.password);
+			$("#idDistrito").val(data.iddistrito.iddistrito);
     		$("#idRol").val(data.idrol.idrol);
-    	})
+		})
+    	
     }));
 
 $(document).on("click","#btnEliminar",(function(){
@@ -370,21 +374,21 @@ function listarTablas(){
 	$('#tbPersonal').DataTable().clear();
 	 $('#tbPersonal').DataTable().destroy();
 	$('#tbPersonal tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("http://localhost:8090/usuario/listaPersonalTrabajo",{},function(listar, q, t){
-		console.log(listar);
-		
-		var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
-		var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
-
-		$("#tbPersonal tbody").empty();
-		$.each(listar,function(index,item){
-			$("#tbPersonal tbody").append("<tr><td>"+item.idusuario+"</td><td>"+item.nombre+"</td><td>"+item.apellido+"</td><td>"+item.dni+
-					"</td><td>"+item.telefono+"</td><td>"+item.correo+"</td><td>"+item.iddistrito.nombre+
-					"</td><td>"+item.idrol.nombre+"</td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
-		})
-		  $("#tbPersonal").DataTable();
-    })
 	
+    $.ajax(settingsRegistro("http://localhost:8090/usuario/listaPersonalTrabajo","GET","",
+			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+	).done(function (response) {
+		  console.log(response);
+		  var editar="<button type='button' class='btn btn-success' id='btnEditar' data-toggle='modal'  data-target='#nuevo'>Editar</button>";
+			var eliminar="<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#eliminar' id='btnEliminar'>Eliminar</button>";
+			$("#tbPersonal tbody").empty();
+			$.each(response,function(index,item){
+				$("#tbPersonal tbody").append("<tr><td>"+item.idusuario+"</td><td>"+item.nombre+"</td><td>"+item.apellido+"</td><td>"+item.dni+
+						"</td><td>"+item.telefono+"</td><td>"+item.correo+"</td><td>"+item.iddistrito.nombre+"</td><td>"+(item.idrol.nombre).split("_")[1]+
+						"</td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
+			})
+		$("#tbPersonal").DataTable();
+	});
 }
 
 function limpiarForm(){
@@ -401,6 +405,7 @@ function limpiarForm(){
 
 $(document).ready( function () {
 
+	
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
@@ -424,7 +429,7 @@ $(document).ready( function () {
         console.log(data);
 		$.each(data,function(index,item){
 			if(item.idrol!=1)
-				$("#idRol").append("<option value='"+item.idrol+"'>"+item.nombre+"</option>");
+				$("#idRol").append("<option value='"+item.idrol+"'>"+(item.nombre).split("_")[1]+"</option>");
 		})
     })
 
@@ -443,58 +448,53 @@ $(document).ready( function () {
 	  });
     
     function registrar(){
-    	$.ajax({
-    		  type: "POST",
-	          data: JSON.stringify(leerUsuario()),
-	          url: "http://localhost:8090/usuario/registrarUsuario", 
-	          contentType: "application/json",
-	          success: function(data){
-	        	mostrarMensaje("Se registro crorectamente el usuario "+data.idusuario);
-	        	listarTablas();
-	        	limpiarForm();
-	          },
-	          error: function(message){
-	        	  console.log(message);
-	        	  mostrarMensaje(message.responseJSON.detail);
-	          }
-	     });
+    	$.ajax( 
+       			settingsRegistro("http://localhost:8090/usuario/registrarUsuario","POST",leerUsuario(),
+           				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+        	).done(function (response) {
+        		listarTablas();
+            	mostrarMensaje("Se registro crorectamente el usuario "+response.idusuario);
+            	limpiarForm();
+            	$("#nuevo").modal("hide");
+        	})
+        	.fail(function(mensaje) {
+    			mostrarMensaje(mensaje.responseJSON.detail);
+    		});
     }
     
     function actualiza(){
-    	$.ajax({
-	          type: "PUT",
-	          data: JSON.stringify(leerUsuario()),
-	          url: "http://localhost:8090/usuario/actualizaUsuario", 
-	          contentType: "application/json",
-	          success: function(data){
-	        	listarTablas();
-	        	mostrarMensaje("Se actualizó crorectamente el usuario "+data.idusuario);
-	        	limpiarForm();
-	          },
-	          error: function(message){
-	        	  console.log(message);
-	        	  mostrarMensaje(message.responseJSON.detail);
-	          }
-	     });
+    	
+    	$.ajax( 
+   			settingsRegistro("http://localhost:8090/usuario/actualizaUsuario","PUT",leerUsuario(),
+       				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+    	).done(function (response) {
+    		listarTablas();
+        	mostrarMensaje("Se actualizó crorectamente el usuario "+response.idusuario);
+        	limpiarForm();
+        	$("#nuevo").modal("hide");
+    	})
+    	.fail(function(mensaje) {
+			mostrarMensaje(mensaje.responseJSON.detail);
+		});
     }
     
-    
+
     
     $("#btn_eliminar").click(function(){
    	 $("#eliminar").modal("hide");
-   	 //var id=$("#idEliminar").val();
-    	$.ajax({
-            type: "DELETE",
-            url: "http://localhost:8090/usuario/eliminaUsuario/", 
-            data: $('#id_form_elimina').serialize(),
-            success: function(data){           	 
-	           	 listarTablas();
-	           	 mostrarMensaje("Se elimino correctamente al usuario");
-            },
-            error: function(){
-          	  mostrarMensaje(MSG_ERROR);
-            }
-       });
+   	 	var cod=$("#idEliminar").val();
+   		$.ajax( 
+   			settingsRegistro("http://localhost:8090/usuario/eliminaUsuario?id="+cod,"DELETE","",
+       				"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+    	).done(function (response) {
+        	mostrarMensaje("Se elimino crorectamente el usuario "+cod);
+    		listarTablas();
+        	limpiarFormCliente();
+    	})
+    	.fail(function(mensaje) {
+    		console.log(mensaje);
+			mostrarMensaje(mensaje.responseJSON.detail);
+		});
     });
     
 } );

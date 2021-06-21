@@ -216,18 +216,31 @@
 	    validator.validate();
 	    if (validator.isValid()) {
 	    	if($("#idTelefono").val()<1){
-	    		alert("EL Telefono no puede ser con todos lo digitos de valor 0");
+	    		mostrarMensaje("EL Telefono no puede ser con todos lo digitos de valor 0");
 	    		return;
 	    	}else if($("#idDni").val()<1){
-	    		alert("EL DNI no puede ser con todos lo digitos de valor 0");
+	    		mostrarMensaje("EL DNI no puede ser con todos lo digitos de valor 0");
 	    		return;
 	    	}
+	    	/*
+	    	$.ajax(settingsRegistro("http://localhost:8090/cliente/registra","POST",leerCliente()))
+    		.done(function (response) {
+    			mostrarMensaje("Se registro correctamente el cliente "+data.idusuario);
+		    	alert("Se creo correctamente ya puedes iniciar Sesion");
+	       		 $(location).attr('href',"/verLogin");
+	        	 limpiarFormCliente();
+    		})
+    		.fail(function(mensaje) {
+    			mostrarMensaje(mensaje);
+			});*/
+	    	
 	    	$.ajax({
 	    		  type: "POST",
 		          data: JSON.stringify(leerCliente()),
 		          url: "http://localhost:8090/cliente/registra", 
 		          contentType: "application/json",
 		          success: function(data){
+		        	  console.log(data);
 		        	 mostrarMensaje("Se registro crorectamente el cliente "+data.idusuario);
 	        		 $(location).attr('href',"/verLogin");
 		        	 limpiarFormCliente();

@@ -1,7 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -30,6 +32,10 @@
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,600|Open+Sans" rel="stylesheet"> 
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
 	<link rel="stylesheet" href="css/estilos.css">
+
+  	<link href="lib/slick/slick.css" rel="stylesheet">
+    <link href="lib/slick/slick-theme.css" rel="stylesheet">
+ 	<link href="css/sweetalert2.min.css" rel="stylesheet">
 
         <link href="css/layout.css" rel="stylesheet" type="text/css" media="all">
     <!-- Custom styles for this page -->
@@ -96,10 +102,10 @@
 			       	  <label for="name" style="font-size: 20px">Número de Orden de Pedido :  <span>${requestScope.tracking.pedido.idpedido}</span></label>
 			          <input class="btmspace-15" type="text" value="${requestScope.tracking.pedido.idpedido}" hidden="" placeholder="Ingrese Numero">	              	
 	              	</div>
-	              	<c:if test="${sessionScope.objUsuario.idrol.idrol>1}">
+	              	<c:if test="${sessionScope.objUsuario.idrol>1}">
 		              	<c:if test="${requestScope.tracking.estado!='ENTREGADO'}">
-		              		<div class="col-md-3 row mt-5">
-			              		<form action="registraEntrega" class="row">
+		              		<div class="col-md-3 row mt-5" id="frmEntrega">
+			              		<form action="pedido/registraEntrega" class="row">
 			              			<input class="btmspace-15" type="text" value="${requestScope.tracking.idtracking}" hidden="" name="idtracking">	
 			              			<input class="btmspace-15" type="text" value="${requestScope.tracking.pedido.idpedido}" hidden="" name="pedido.idpedido">	
 			              			<input class="btmspace-15" type="text" value="${requestScope.tracking.pedido.cliente.direccion}" hidden="" name="destino">	
@@ -180,7 +186,7 @@
 	          	<c:forEach items="${requestScope.historial}" var="item">
 		            <tr>
 		              <td>${item.fechaModificacion}</td>
-		              <td>${item.usuario.idrol.nombre}: ${item.usuario.nombre} ${item.usuario.apellido}</td>
+		              <td>${fn:substring(item.usuario.idrol.nombre,5,25)}: ${item.usuario.nombre} ${item.usuario.apellido}</td>
 		              <td>${item.estado}</td>
 		              <td></td>
 		            </tr>	          	
@@ -373,6 +379,7 @@
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
+	    <script src="js/sweetalert2.min.js"></script>
     <!-- Page level custom scripts -->
     <script src="js/demo/datatables-demo.js"></script>
     	<script src="js/global.js"></script>
@@ -380,7 +387,27 @@
    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
     
     <script type="text/javascript">  
-
+    
+    function mensajeGood(mensaje){
+		Swal.fire({
+            type: 'success',
+            title: 'Excelente',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+	}
+	
+	function mensajeError(mensaje){
+		Swal.fire({
+            type: 'info',
+            title: 'Opps...',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+	}
+    
 
 $(document).on("click","#verPedido",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
@@ -441,20 +468,23 @@ $(document).ready( function () {
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
-    
+	
+	if(("<c:out value = "${sessionScope.MENSAJE}" />")!=''){
+    	mensajeGood("<c:out value = "${sessionScope.MENSAJE}" />");
+    	console.log("<c:remove var ='MENSAJE'/>");
+    	//alert("<c:out value = "${sessionScope.MENSAJE}" />");
+    }
+	
+	if(("<c:out value = "${sessionScope.ERROR}" />")!=''){
+		mensajeError("<c:out value = "${sessionScope.ERROR}" />");
+    	console.log("<c:remove var ='ERROR'/>");
+    	//alert("<c:out value = "${sessionScope.MENSAJE}" />");
+    }
     //alert("Hola");
     //listarTablas();
     $("#tbPedido").DataTable();
     
-    /*$("#btnCancelar").click(function(){
-		//alert("hola");
-		//bloquear(false);
-    	$("#idRegistrar").trigger("reset");
-		$("#idRegistrar").data("bootstrapValidator").resetForm(true);
-		$("#idCodigo").val("0");
-		$("#idRegistrar select").val("[ Seleccione ]");
-    });
-    */
+    
 		    
 });
     

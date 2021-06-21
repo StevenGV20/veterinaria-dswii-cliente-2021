@@ -133,7 +133,10 @@
                             <div class="section-header">
                                 <h1>Otros Servicios</h1>
                             </div>
-
+  							<div id="listaServicios" class="row col-md-12">
+	                        </div>
+	                         <center><a href="/verListaServicios" class="btn mt-5">Ver mas <i class="fas fa-list"></i></a></center>
+	                        <!-- 
                             <div class="row align-items-center product-slider product-slider-3">
 	                             <c:forEach items="${sessionScope.LISTASERVICIOS}" var="item">
 	                                <div class="col-lg-4">
@@ -163,7 +166,7 @@
 	                                    </div>
 	                                </div>
                                 </c:forEach>  
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                     
@@ -361,6 +364,45 @@
         	$("#idServicio").val(cod);
         }));
 		
+        function listarServicios(url){
+    		$('#listaServicios').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
+	    	$.getJSON(url,{},function(lista, q, t){
+	    		$("#listaServicios").empty();
+	    		console.log(lista);
+	    		$.each(lista.content,function(index,item){
+	    			$("#listaServicios").append("<div class='col-md-4'> "
+	    					+ "	<div class='product-item'> "
+	    					+ "		<div class='product-title'> "
+	    					+ "			<a href='verDetalleServicio?id="+item.idservicio+"'>"+item.nombre+"</a> "
+	    					+ "			<div class='ratting'> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-image'> "
+	    					+ "			<a href='verDetalleServicio?id="+item.idservicio+"'> "
+	    					+ "				<img src='"+item.foto+"' class='img_card' alt='Product Image'> "
+	    					+ "			</a> "
+	    					+ "			<div class='product-action'> "
+	    					+ "				<a href='verDetalleServicio?id="+item.idservicio+"'><i class='fa fa-search'></i></a> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-price'> "
+	    					+ "			<h3><span>S/. </span>"+item.precio+"</h3> "
+	    					+ "			<a class='btn' href='verDetalleServicio?id="+item.idservicio+"'><i class='fa fa-shopping-cart'></i>Solicitar</a> "
+	    					+ "		</div> "
+	    					+ "	</div> "
+	    					+ "</div>");
+	    		})
+	    		$('#idLoading').hide();
+	    		//$("#tbServicios img").css("width","100%");
+	        })
+	    	
+	    }
+        
         function limpiarForm(){
     		//bloquear(false);
     		$("#idRegistrar").trigger("reset");
@@ -390,7 +432,7 @@
         
         	$(document).ready(function(){
         		
-
+        		listarServicios("http://localhost:8090/servicio/listaByPage?page=0&size=6");
         	    $("#btnRegistrar").click(function(){
         	    	var validator = $('#idRegistrar').data('bootstrapValidator');
         		    validator.validate();

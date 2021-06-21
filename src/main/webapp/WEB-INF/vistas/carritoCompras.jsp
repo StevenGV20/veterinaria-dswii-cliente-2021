@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
   <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -78,7 +78,7 @@
                             <a href="verListaProductos" class="nav-item nav-link">Productos</a>
                             <a href="verListaServicios" class="nav-item nav-link">Servicios</a>
 	                       	<a href="verRegistroConsultas" class="nav-item nav-link">Consultas</a>
-	                            <c:if test="${sessionScope.objUsuario.idrol.idrol==1}">
+	                            <c:if test="${sessionScope.objUsuario.idrol==1}">
 		                            <a href="verTracking" class="nav-item nav-link">Mis Ordenes</a>
 		                            <a href="verMisMascotas?cod=${objUsuario.idusuario}" class="nav-item nav-link">Mis Mascotas</a>
 		                            <a href="verRegistroIncidencia" class="nav-item nav-link">Incidencias</a>

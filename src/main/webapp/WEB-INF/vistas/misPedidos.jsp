@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -30,6 +30,10 @@
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,600|Open+Sans" rel="stylesheet"> 
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
 	<link rel="stylesheet" href="css/estilos.css">
+
+  	<link href="lib/slick/slick.css" rel="stylesheet">
+    <link href="lib/slick/slick-theme.css" rel="stylesheet">
+ 	<link href="css/sweetalert2.min.css" rel="stylesheet">
 
     <!-- Custom styles for this page -->
     <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
@@ -91,7 +95,7 @@
                     <!-- Page Heading -->
                     <h1 class="h3 text-gray-800">Mis Pedidos</h1>
                     <p class="">En esta seccion podras ver todos tus pedidos realizados y consultar el estado en que se encuentran.</p>
-					<input value="${sessionScope.objUsuario.idrol.idrol}" id="txtIdRol" hidden=""/>
+					<input value="${sessionScope.objUsuario.idrol}" id="txtIdRol" hidden=""/>
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4 col-md-9" style="margin-left: 12%;">
                         <div class="card-header py-3">
@@ -106,7 +110,7 @@
                                         	<th hidden=""></th>
                                             <th>Fecha de Registro</th>
                                             <th>Estado</th>
-                                            <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
+                                            <c:if test="${(sessionScope.objUsuario.idrol==2) or (sessionScope.objUsuario.idrol==3)}">
                                             	<th>Cliente</th>
                                             	<th></th>
                                             </c:if>
@@ -119,7 +123,7 @@
                                         	<th hidden=""></th>
                                             <th>Nombre del cliente</th>
                                             <th>Estado</th>
-                                            <c:if test="${(sessionScope.objUsuario.idrol.idrol==2) or (sessionScope.objUsuario.idrol.idrol==3)}">
+                                            <c:if test="${(sessionScope.objUsuario.idrol==2) or (sessionScope.objUsuario.idrol==3)}">
                                             	<th>Cliente</th>
                                             	<th></th>
                                             </c:if>
@@ -133,7 +137,7 @@
 	                                        	<td hidden="">${item.idtracking}</td>
 	                                            <td>${item.pedido.fechaRegistro}</td>
 	                                            <td>${item.estado}</td>
-	                                            <c:if test="${sessionScope.objUsuario.idrol.idrol==2 || sessionScope.objUsuario.idrol.idrol==3}">
+	                                            <c:if test="${sessionScope.objUsuario.idrol==2 || sessionScope.objUsuario.idrol==3}">
 	                                            	<td>${item.pedido.cliente.nombre} ${item.pedido.cliente.apellido}</td>
 	                                            	<c:if test="${item.estado=='ENTREGADO'}">
 	                                            		<td><button data-toggle='modal' disabled="disabled"  data-target='#asignar' class="btn btn-warning" id="btnAsignar">Asignar <i class="fas fa-user-check"></i></button></td>
@@ -239,7 +243,7 @@
         <div class="modal-body">
 	        <div class="col-md-12">
 	        	<div class="row">
-	        		<form action="asignaTrabajador" method="post" name="" data-toggle="validator" id="formAsignar" class="col-md-12">	
+	        		<form action="pedido/asignaTrabajador" method="post" name="" data-toggle="validator" id="formAsignar" class="col-md-12">	
 		        		<input id="idCodigoTracking" name="idtracking" hidden=""/>
 		        		<input id="idTrackPedido" name="pedido.idpedido" hidden=""/>
 		                  <div class="">
@@ -328,6 +332,7 @@
     <script src="vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
+	    <script src="js/sweetalert2.min.js"></script>
     <!-- Page level custom scripts -->
     <script src="js/demo/datatables-demo.js"></script>
     	<script src="js/global.js"></script>
@@ -335,29 +340,53 @@
    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.bootstrapvalidator/0.5.2/js/bootstrapValidator.min.js"></script>
     
     <script type="text/javascript">  
-
+    
+    function mensajeGood(mensaje){
+		Swal.fire({
+            type: 'success',
+            title: 'Excelente',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+	}
+	
+	function mensajeError(mensaje){
+		Swal.fire({
+            type: 'info',
+            title: 'Opps...',
+            text: mensaje,
+            showConfirmButton: false,
+            timer: 2000
+        })
+	}
 
 $(document).on("click","#verPedido",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#lblCodigo").text(cod);
 	$("#idCodigoPedido").val(cod);
-	//alert(cod);
 	limpiarDetalle();
 	$('#detallePedido tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
-	$.getJSON("detallePedidoById",{id:cod},function(listar, q, t){
-		$("#detallePedido tbody").empty();
-		console.log(listar);
-		$.each(listar,function(index,item){
-			$("#detallePedido tbody").append("<tr><td>"+item.producto.idproducto+"</td><td>"+item.producto.nombre+"</td><td>"+item.cantidad+"</td><td>"+item.precioTotal+"</td></tr>");
-			if(item.montoTotal>0){
-				//alert(item.montoTotal);
-				$("#idImporte").text(parseFloat(item.importe).toFixed(2));
-				$("#idIGV").text((item.igv).toFixed(2));
-				$("#idDescuento").text((item.descuento).toFixed(2));
-				$("#idTotal").text((item.montoTotal).toFixed(2));
-			}
-		})
-	})
+
+	$.ajax(settingsRegistro(
+			"http://localhost:8090/pedido/detallePedidoById/"+cod,
+			"GET","","<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+		).done(function (response) {
+			console.log(response);
+		  	//console.log("<c:out value="${sessionScope.objUsuario.access_token}"/>");
+		  	$("#detallePedido tbody").empty();
+		  	$.each(response,function(index,item){
+				$("#detallePedido tbody").append("<tr><td>"+item.producto.idproducto+"</td><td>"+item.producto.nombre+"</td><td>"+item.cantidad+"</td><td>"+item.precioTotal+"</td></tr>");
+				if(item.montoTotal>0){
+					//alert(item.montoTotal);
+					$("#idImporte").text(parseFloat(item.importe).toFixed(2));
+					$("#idIGV").text((item.igv).toFixed(2));
+					$("#idDescuento").text((item.descuento).toFixed(2));
+					$("#idTotal").text((item.montoTotal).toFixed(2));
+				}
+			})
+		});
+	
 	
 	//bloquear(false);
 }));
@@ -406,21 +435,43 @@ function listarTablas(lista){
 
 function listaRepartidor(){
 	//alert("hola");
+	//var cod={cod : 4}:
+	$.ajax(settingsRegistro(
+			"http://localhost:8090/usuario/listaUsuarioByRol?cod=4","GET","",
+			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+	).done(function (response) {
+	  console.log(response);
+	  	$.each(response,function(index,item){
+			$("#idRepartidor").append("<option value='"+item.idusuario+"'>"+item.nombre+" "+item.apellido+"</option>");
+		})
+	});
+	/*
 	$.getJSON("http://localhost:8090/usuario/listaUsuarioByRol",{cod:4},function(listar, q, t){
 		console.log(listar);
 		$.each(listar,function(index,item){
 			$("#idRepartidor").append("<option value='"+item.idusuario+"'>"+item.nombre+" "+item.apellido+"</option>");
 		})
-	})
+	})*/
 }
 
 
 $(document).ready( function () {
-
+	
+	//alert("<c:out value="+${sessionScope.objUsuario.access_token}+"/>");
+	
 	$("#success-alert").fadeTo(2000,500).slideUp(500,function(){
 		$("#success-alert").slideUp(500);	
 	});
-    
+    if(("<c:out value = "${sessionScope.MENSAJE}" />")!=''){
+    	mensajeGood("<c:out value = "${sessionScope.MENSAJE}" />");
+    	console.log("<c:remove var ='MENSAJE'/>");
+    	//alert("<c:out value = "${sessionScope.MENSAJE}" />");
+    }
+    if(("<c:out value = "${sessionScope.ERROR}" />")!=''){
+    	mensajeError("<c:out value = "${sessionScope.ERROR}" />");
+    	console.log("<c:remove var ='ERROR'/>");
+    	//alert("<c:out value = "${sessionScope.MENSAJE}" />");
+    }
     //alert("Hola");
     //listarTablas();
     listaRepartidor();
@@ -443,25 +494,37 @@ $(document).ready( function () {
     	var validator = $('#formAsignar').data('bootstrapValidator');
 	    validator.validate();
 	    if (validator.isValid()) {
-	    	$.ajax({
-		          type: "POST",
-		          url: "asignaTrabajador", 
-		          data: $('#formAsignar').serialize(),
-		          success: function(data){
-		        	listarTablas(lista);
-		        	mostrarMensaje(data.mensaje);
-		        	//limpiarFormCliente();
-		          },
-		          error: function(){
-			          //listarTablas();
-		        	  mostrarMensaje(MSG_ERROR);
-		          }
-		     });
+	    	//alert("hola");
+	    	var cod = $("#idCodigoTracking").val();
+	    	var ped = $("#idTrackPedido").val();
+	    	var usu = $("#idRepartidor").val();
+	    	var track= {
+	    		idtracking : cod,
+	    		pedido : {
+	    			idpedido : ped
+	    		},
+	    		trabajador : {
+	    			idusuario : usu
+	    		}
+	    	};
+	    	
+	    	console.log(JSON.stringify(track));
+	    	
+	    	$.ajax(settingsRegistro("http://localhost:8090/tracking/asignaTrabajador", "PUT", track,
+	    			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+	    		).done(function (data) {
+	    			console.log(data);
+	    			mensajeGood("Se asigno correctamente al trabajador.");
+	    		})
+	    		.fail(function(mensaje) {
+	    			mensajeError(message.responseJSON.detail);
+	    		});
+
 		}
 		    
 	  });
     */
-    
+   
     
     $('#formAsignar').bootstrapValidator({      
       	 fields:{

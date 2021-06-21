@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==null}">
+    <c:if test="${sessionScope.objUsuario.idrol==null}">
     	<c:redirect url="/"/>
     </c:if>
-    <c:if test="${sessionScope.objUsuario.idrol.idrol==1}">
+    <c:if test="${sessionScope.objUsuario.idrol==1}">
     	<c:redirect url="/"/>
     </c:if>
 <!DOCTYPE html>
@@ -385,6 +385,7 @@
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
 	<script src="js/global.js"></script>
+	<script src="js/cargaImagenes.js"></script>
     <script src="popup.js"></script>
     
 	
@@ -419,9 +420,10 @@
 $(document).on("click","#btnEditar",(function(){
 	var cod=$(this).parents('tr').find("td")[0].innerHTML;
 	$("#titleModal").text("Editar Area");
+	//alert(cod);
 	//$("#idRegistrar").attr("action","producto/actualizaProducto")
 	$.getJSON("http://localhost:8090/producto/buscaProductoXID/"+cod,{},function(data){
-		console.log(data.producto);
+		console.log(data);
 		$("#idCodProducto").val(cod);
 		//alert($("#idCodProducto").val());
 		$("#idNombre").val(data.nombre);
@@ -434,6 +436,12 @@ $(document).on("click","#btnEditar",(function(){
 		CKEDITOR.instances.editor.destroy();
 		$("#editor").append(data.descripcionHTML);
 		initSample();
+		$("#foto1").attr("src",data.foto1);
+		$("#foto2").attr("src",data.foto2);
+		$("#foto3").attr("src",data.foto3);
+		$("#fotos1").val(data.foto1);
+		$("#fotos2").val(data.foto2);
+		$("#fotos3").val(data.foto3);
 		$("#idImagen1").val(data.foto1);
 		
 	})
@@ -466,9 +474,9 @@ function limpiar(){
 	$("#foto1").attr("src","img/image-not-found.png");
 	$("#foto2").attr("src","img/image-not-found.png");
 	$("#foto3").attr("src","img/image-not-found.png");
-	$("#fotos1").attr("src","img/image-not-found.png");
-	$("#fotos2").attr("src","img/image-not-found.png");
-	$("#fotos3").attr("src","img/image-not-found.png");
+	$("#fotos1").val("img/image-not-found.png");
+	$("#fotos2").val("img/image-not-found.png");
+	$("#fotos3").val("img/image-not-found.png");
 	
 }
 
@@ -476,6 +484,7 @@ function listarTabla(){
 	$('#idTableProductos').DataTable().clear();
 	 $('#idTableProductos').DataTable().destroy();
 	$('#idTableProductos tbody').append('<tr><td class="loading text-center mb-5" colspan="10"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</td> </tr>');
+	
 	$.getJSON("http://localhost:8090/producto/lista",{},function(lista, q, t){
 		console.log(lista);
 		//var detalles="<button type='button' class='btn btn-info' id='btnDetalles' data-toggle='modal'  data-target='#idModalFoto'>Subir Foto</button>";
@@ -491,14 +500,14 @@ function listarTabla(){
 					item.stock+"</td><td>"+
 					item.precio+"</td><td>"+
 					item.idcategoria.nombre+"</td><td>"+
-					item.marca+"</td><td><img  src='img/cargando.gif' onload='$(this).attr(\"src\",\""+item.foto1+"\")' class='img-list' alt='No existe' />"+
+					item.marca+"</td><td><img  src='img/cargando.gif' id='idFoto"+item.idproducto+"' class='img-list' alt='No existe' />"+
 					"</td><td><a href='verDetalleProducto?id="+
 							item.idproducto+"' target='_blank'><i class='fas fa-eye'></i></a></td><td>"+editar+"</td><td>"+eliminar+"</td></tr>");
-			
+			setTimeout(function(){ $("#idFoto"+item.idproducto).attr("src",item.foto1); }, 1500);
+			setTimeout(function(){ $("#idTableProductos").DataTable(); }, 2000);
 			//$(".img-list").eq(c).attr("src",item.foto1);
 			c++;
 		})//class='card-img-top'
-		$("#idTableProductos").DataTable();
 		/*$('.img-list').on('load', function() {
 			  alert("image is loaded");
 		});*/
@@ -546,40 +555,21 @@ $(document).ready( function () {
 	    validator.validate();
 	    
 	    if (validator.isValid()) {
-	    	const file=document.getElementsByName("files")[0].files[0];
-	    	var sizeByte = file.size;
-	        var sizekiloBytes = parseInt(sizeByte / 1024);
-	    	if(sizekiloBytes>100){
-	    		alert("El tamaño de archivo es "+sizekiloBytes+" KB y supero el limite");
-	    		return;
-	    	}
 	    	
-			$.ajax({
-	    		  type: "POST",
-		          url: "http://localhost:8090/producto/registra", 
-	    		  data: $("#idRegistrar").serialize(),
-		          success: function(data){
-		        	/*
-		        	//var urls = new Array();
-		        	for(var i=0;i<3;i++){
-						uploadImage(i);
-			    	}*/
-		        	
-		        	//console.log(urls);
-		        	listarTabla();
+	    	$.ajax( settingsRegistro("http://localhost:8090/producto/registra", "POST", leerProducto(),
+	    			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+	    		).done(function (data) {
+	    			listarTabla();
 		        	mostrarMensaje("Se registro crorectamente el producto "+data.idproducto);
 		        	//guardarFotos(data.idproducto);
 		        	limpiar();
-		        	//limpiarFormCliente();
-		          },
-		          error: function(message){
-		        	  console.log(message);
-		        	  mostrarMensaje(message.responseJSON.detail);
-		          }
-		     });
+	    		})
+	    		.fail(function(mensaje) {
+	    			mostrarMensaje(message.responseJSON.detail);
+	    		});
+	    	
 	    }
 		
-		//$("#idRegistrar").submit();
     });
     
     function guardarFotos(id){
@@ -608,19 +598,16 @@ $(document).ready( function () {
     $("#btn_eliminar").click(function(){
 		var cod=$("#idEliminar").val();
      	  $("#eliminar").modal("hide");
-    	$.ajax({
-            type: "DELETE",
-            url: "http://localhost:8090/producto/elimina/"+cod, 
-            //data: $('#id_form_elimina').serialize(),
-            success: function(data){
-            	$("#idTableProductos tbody").empty();
-          	  	listarTabla();
-          	  mostrarMensaje("Se elimino correctamente");	          	
-            },
-            error: function(message){
-            	mostrarMensaje(message.responseJSON.detail);
-            }
-       });
+     	  
+     	 $.ajax( settingsRegistro("http://localhost:8090/producto/elimina/"+cod, "DELETE", "",
+     			"<c:out value="${sessionScope.objUsuario.access_token}"/>","<c:out value="${sessionScope.objUsuario.jti}"/>")
+     		).done(function (data) {
+     			console.log(data);
+     		})
+     		.fail(function(mensaje) {
+     			mostrarMensaje(message.responseJSON.detail);
+     		});
+    	
     });
     
 } );
@@ -709,10 +696,7 @@ $(document).ready( function () {
             },
            Foto1: {
      	    	selector:'#idImagen1',   
-                    validators: {    
-                    	notEmpty: {    
-                            message: 'Elija un archivo'    
-                        },      
+                    validators: {          
                         regexp: {    
                             regexp: /\.(gif|jpe?g|png|webp|bmp)$/i,    
                             message: 'Solo admite formatos: .jpe, .jpg, .png, .webp, .bmp'    

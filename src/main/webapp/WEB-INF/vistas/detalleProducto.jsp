@@ -26,7 +26,7 @@
         <style type="text/css">
         	.img_card{
         		width:100%;
-        		height:400px;
+        		height:200px;
         	}
         </style>
     </head>
@@ -62,19 +62,19 @@
                                     <div class="product-slider-single normal-slider">
                                     	<c:forEach begin="1" end="2">
                                     		<c:if test="${!empty requestScope.objProducto.foto1}">
-                                        		<img src="img/${requestScope.objProducto.foto1}" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto1}" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto1}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${!empty requestScope.objProducto.foto2}">
-                                        		<img src="img/${requestScope.objProducto.foto2}" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto2}" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto2}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${!empty requestScope.objProducto.foto3}">
-                                        		<img src="img/${requestScope.objProducto.foto3}" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto3}" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto3}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
@@ -84,19 +84,19 @@
                                     <div class="product-slider-single-nav normal-slider col-md-12">
                                        <c:forEach begin="1" end="2">
                                     		<c:if test="${!empty requestScope.objProducto.foto1}">
-                                        		<img src="img/${requestScope.objProducto.foto1}"id="idFoto1" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto1}"id="idFoto1" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto1}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${!empty requestScope.objProducto.foto2}">
-                                        		<img src="img/${requestScope.objProducto.foto2}" id="idFoto2" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto2}" id="idFoto2" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto2}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${!empty requestScope.objProducto.foto3}">
-                                        		<img src="img/${requestScope.objProducto.foto3}" id="idFoto3" alt="No existe">
+                                        		<img src="${requestScope.objProducto.foto3}" id="idFoto3" alt="No existe">
 	                                        </c:if>
 	                                        <c:if test="${empty requestScope.objProducto.foto3}">
 	                                        	<img src="img/image-not-found.png" alt="No existe">
@@ -186,7 +186,11 @@
                             <div class="section-header">
                                 <h1>Otros Productos</h1>
                             </div>
-
+                            <div id="listaProductos" class="row col-md-12">
+                            	
+                            </div>
+                             <center><a href="/verListaProductos" class="btn mt-5">Ver mas <i class="fas fa-list"></i></a></center>
+	<!-- 
                             <div class="row align-items-center product-slider product-slider-3" id="listaProductos">
 	                             <c:forEach items="${sessionScope.LISTAPRODUCTOS}" var="item">
 	                                <div class="col-lg-3">
@@ -219,7 +223,7 @@
                             </div>
                         </div>
                     </div>
-                
+                 -->
                     <!-- Side Bar Start -->
                     <!-- 
                     <div class="col-lg-4 sidebar">
@@ -515,7 +519,54 @@
 	            })
 	    }
 
+	    function listarProductos(url,page){
+    		$('#listaProductos').html('<div class="loading text-center col-md-12 mb-5" id="idLoading"><img src="img/cargando.gif" width="10%" alt="loading" /><br/>Un momento, por favor...</div>');
+	    	$.getJSON(url+page,{},function(lista, q, t){
+	    		$("#listaProductos").empty();
+	    		$.each(lista.content,function(index,item){
+	    			$("#listaProductos").append("<div class='col-md-4 col-lg-4 col-sm-4 mb-2'> "
+	    					+ "	<div class='product-item'> "
+	    					+ "		<div class='product-title'> "
+	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'>"+item.nombre+"</a> "
+	    					+ "			<div class='ratting'> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "				<i class='fa fa-star'></i> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-image'> "
+	    					+ "			<a href='verDetalleProducto?id="+item.idproducto+"'> "
+	    					+ "				<img  src='"+item.foto1+"' id='idFoto"+item.idproducto+"' class='img_card' alt='Product Image'> "
+	    					+ "			</a> "
+	    					+ "			<div class='product-action'> "
+	    					+ "				<a href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-search'></i></a> "
+	    					+ "			</div> "
+	    					+ "		</div> "
+	    					+ "		<div class='product-price'> "
+	    					+ "			<h3><span>S/. </span>"+(item.precio).toFixed(2)+"</h3>"
+	    					+ "			<a class='btn' href='verDetalleProducto?id="+item.idproducto+"'><i class='fa fa-shopping-cart'></i>Comprar</a> "
+	    					+ "		</div> "
+	    					+ "	</div> "
+	    					+ "</div>");
+	    			//setTimeout(function(){ $("#idFoto"+item.idproducto).attr("src",item.foto1); }, 1000);
+	    		})
+	    		console.log("Total pages "+lista.totalPages);
+    			for(var i=1;i<=lista.totalPages;i++){
+    				$("#paginacion").append(" <li class='page-item'><button class='page-link' id='idNumPage'>"+i+"</button></li>");
+    			}
+	    		
+	    		$('#idLoading').hide();
+	    		//$("#tbServicios img").css("width","100%");
+	        })
+	    	
+	    }
+
 	$(document).ready(function(){
+		
+		listarProductos("http://localhost:8090/producto/listaByPage/",0);
+		
 		$(".cantidad").click(function(){
 			var can=$("#idCantidad").val();
 			if(can<1)
